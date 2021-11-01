@@ -9,5 +9,11 @@
   },
   "keywords": [],
   "author": "Víctor Bartolomé (victorbdeveloper)(victorbdeveloper@gmail.com)(https://github.com/victorbdeveloper)",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.24.0",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "yargs": "^17.2.1"
+  }
 }
