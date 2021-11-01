@@ -1,12 +1,13 @@
 {
   "name": "alquipet",
   "version": "1.0.0",
-  "description": "",
+  "description": "Repositorio donde se unen los proyectos 'Alquipet FRONT' y 'Alquipet BACK' y que está destinado a ser del que se de haga el despliegue final a un hosting real ",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "Víctor Bartolomé (victorbdeveloper)(victorbdeveloper@gmail.com)(https://github.com/victorbdeveloper)",
   "license": "ISC"
 }
