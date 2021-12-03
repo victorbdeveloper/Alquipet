@@ -1,20 +1,38 @@
 {
   "name": "alquipet",
   "version": "1.0.0",
-  "description": "Repositorio donde se unen los proyectos 'Alquipet FRONT' y 'Alquipet BACK' y que está destinado a ser del que se de haga el despliegue final a un hosting real ",
+  "description": "Proyecto donde se unen los proyectos 'Alquipet FRONT' y 'Alquipet' y que está destinado a ser del que se haga el despliegue final a un hosting real",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node app.js"
   },
   "keywords": [],
-  "author": "Víctor Bartolomé (victorbdeveloper)(victorbdeveloper@gmail.com)(https://github.com/victorbdeveloper)",
-  "license": "ISC",
+  "author": "Víctor Bartolomé (victorbdeveloper)",
+  "license": "MIT",
   "dependencies": {
     "axios": "^0.24.0",
+    "bcryptjs": "^2.4.3",
+    "cloudinary": "^1.27.1",
+    "cors": "^2.8.5",
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
-    "firebase": "^9.2.0",
-    "yargs": "^17.2.1"
-  }
+    "express-fileupload": "^1.2.1",
+    "express-validator": "^6.13.0",
+    "google-auth-library": "^7.10.2",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^6.0.12",
+    "nodemon": "^2.0.15",
+    "yargs": "^17.3.0",
+    "uuid": "^8.3.2"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/victorbdeveloper/Alquipet.git"
+  },
+  "bugs": {
+    "url": "https://github.com/victorbdeveloper/Alquipet/issues"
+  },
+  "homepage": "https://github.com/victorbdeveloper/Alquipet#readme"
 }
