@@ -7,27 +7,33 @@ const ListingSchema = Schema({
     default: true,
   },
   address: {
-    type: String, //TODO: revisar si es un String o un ObjectId de la tabla Address
+    type: Schema.Types.ObjectId,
+    ref: "Address",
     required: [true, "Establecer la dirección del anuncio es obligatorio"],
   },
   date_publication: {
-    type: Date, //TODO: revisar si el campo es un Date o es otro tipo de dato
+    type: Date,
     required: [true, "Establecer la fecha del anuncio es obligatorio"],
-    default: Date.now, //TODO: revisar si es la manera correcta de poner la fecha actual
+    default: Date.now,
   },
   pets_allowes: {
-    type: String, //TODO: revisar si es un String o un ObjectId de la tabla Pets_allowed
+    type: Schema.Types.ObjectId,
+    ref: "Pets_allowed",
     required: [
       true,
       "Establecer las mascotas admitidas en el anuncio es obligatorio",
     ],
   },
-  //TODO: comprobar como realizar un campo de tipo lista que hace referencia a otra tabla -> List<Photo>
-  photos: {
-    type: String,
-  },
+  photos: [
+    {
+      id: {
+        type: mongoose.Schema.ObjectId,
+        ref: "Photo",
+      },
+    },
+  ],
   price: {
-    type: Number, //TODO: revisar si es la manera correcta de poner un campo tipo int
+    type: Number,
     required: [
       true,
       "Establecer el precio del piso en el anuncio es obligatorio",

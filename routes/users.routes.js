@@ -7,7 +7,7 @@ const {
 } = require("../middlewares/index.middlewares");
 
 const {
-  isRoleValid,
+ // isRoleValid,
   isEmailValid,
   userExistsById,
 } = require("../helpers/db-validators");
@@ -23,7 +23,7 @@ const router = Router();
 
 //devolución de un text/html (no es común devolver un texto directamente, es mejor devolver un JSON)
 router.get("/holamundo", (req, res) => {
-  res.send("Hello World desde /test/holamundo");
+  res.send("Hello World desde /api/users/holamundo");
 });
 
 //PETICIÓN GET
@@ -39,7 +39,7 @@ router.post(
     }),
     check("email").custom(isEmailValid),
     // check("role", "No es un rol válido").isIn(["ADMIN_ROLE", "USER_ROLE"]),
-    check("role").custom(isRoleValid),
+    //check("role").custom(isRoleValid),
     validateRequest,
   ],
   testPost
@@ -51,7 +51,7 @@ router.put(
   [
     check("id", `El id no es un id valido de mongo`).isMongoId(),
     check("id").custom(userExistsById),
-    check("role").custom(isRoleValid),
+    //check("role").custom(isRoleValid),
     validateRequest,
   ],
   testPut
