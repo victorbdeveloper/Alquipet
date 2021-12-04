@@ -5,13 +5,13 @@ const PhotoSchema = Schema({
     type: String,
     required: [true, "El nombre del archivo es obligatorio"],
   },
-  //TODO: REVISAR ESTE CAMPO, ES POSIBLE QUE HAYA QUE SACARLO DE UN ARRAY CON OPCIONES COMO EN LA CLASE ROLE DEL EJEMPLO
-  file_name: {
+  mime_type: {
     type: String,
     required: [true, "El tipo de archivo es obligatorio"],
+    emun: ["gif", "jpeg", "png", "svg+xml"],
   },
   length: {
-    type: Number, //TODO: revisar si es la manera correcta de poner un campo tipo int
+    type: Number,
     required: [true, "Establecer el tamaño del archivo es obligatorio"],
   },
   compressed: {
