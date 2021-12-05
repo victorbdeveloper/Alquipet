@@ -29,35 +29,32 @@ const UserSchema = Schema({
   },
   google: {
     type: Boolean,
-    required: [
-      true,
-      "Establecer si el tipo de acceso se ha realizado mediante google es obligatorio",
-    ],
     default: false,
   },
   state: {
     type: Boolean,
-    required: [true, "Establecer el estado de la cuenta es obligatorio"],
     default: true,
   },
   photo: {
-    type: String, //TODO: revisar si es un String o un ObjectId de la tabla Photo
+    type: Schema.Types.ObjectId,
+    ref: "Photo",
   },
-  //TODO: comprobar como realizar un campo de tipo lista que hace referencia a otra tabla -> List<Listing>
-  favorite_listings: {
-    type: String,
-  },
-  //TODO: comprobar como realizar un campo de tipo lista que hace referencia a otra tabla -> List<Listing>
-  published_listings: {
-    type: String,
-  },
-
-  // role: {
-  //   type: String,
-  //   required: true,
-  //   default: "USER_ROLE",
-  //   enum: ["ADMIN_ROLE", "USER_ROLE"],
-  // },
+  favorite_listings: [
+    {
+      id: {
+        type: Schema.Types.ObjectId,
+        ref: "Listing",
+      },
+    },
+  ],
+  published_listings: [
+    {
+      id: {
+        type: Schema.Types.ObjectId,
+        ref: "Listing",
+      },
+    },
+  ],
 });
 
 //TODO: VERIFICAR ESTOS DATOS YA QUE EL USUARIO NO ES EXACTAMENTE IGUAL

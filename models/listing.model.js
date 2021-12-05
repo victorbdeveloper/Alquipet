@@ -27,7 +27,7 @@ const ListingSchema = Schema({
   photos: [
     {
       id: {
-        type: mongoose.Schema.ObjectId,
+        type: Schema.Types.ObjectId,
         ref: "Photo",
       },
     },

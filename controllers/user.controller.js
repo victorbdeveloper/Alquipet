@@ -27,28 +27,36 @@ const testGet = async (req = request, res = response) => {
 
   const [totalUsers, users] = await Promise.all([
     User.countDocuments(query),
-    User.find(query)
-      .skip(Number(indexFrom))
-      .limit(Number(limit)),
+    User.find(query).skip(Number(indexFrom)).limit(Number(limit)),
   ]);
 
   res.json({ totalUsers, users });
 };
 
-const testPost = async (req = request, res = response) => {
-  const { name, email, password, role } = req.body;
-  const user = new User({ name, email, password, role });
+const createUser = async (req = request, res = response) => {
+  //se ha utilizado el operador rest para no tener en cuenta la información que viene en los campos previos y que al generar un usuario
+  //en la bd no se almacenen posibles datos añadidos a esos campos por error o con intenciones fraudulentas
+  const {
+    google,
+    state,
+    photo,
+    favorite_listings,
+    published_listings,
+    ...rest
+  } = req.body;
+  const user = new User(rest);
 
   //ENCRIPTAR LA PASSWORD(HACER HASH)
   const salt = bcryptjs.genSaltSync();
-  user.password = bcryptjs.hashSync(password, salt);
-  //GUARDAR EL USUARIO EN LA BASE DE DATOS
+  user.password = bcryptjs.hashSync(user.password, salt);
 
+  //GUARDAR EL USUARIO EN LA BASE DE DATOS
   await user.save();
 
+  //RESPUESTA
   res.json({
-    msg: "peticion POST a /test en el user.controller.js",
-    user,
+    msg: "Usuario creado y guardado en la Base de Datos con éxito.",
+    rest,
   });
 };
 
@@ -101,8 +109,6 @@ const testDelete = async (req = request, res = response) => {
     { new: true } //con el new:true se muestran los resultados de los cambios ya producidos
   );
 
-  
-
   res.json({
     user,
     uid,
@@ -111,7 +117,7 @@ const testDelete = async (req = request, res = response) => {
 
 module.exports = {
   testGet,
-  testPost,
+  createUser,
   testPut,
   testDelete,
 };
