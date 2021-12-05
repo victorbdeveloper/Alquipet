@@ -7,14 +7,15 @@ const {
 } = require("../middlewares/index.middlewares");
 
 const {
- // isRoleValid,
+  // isRoleValid,
+  isUserNameValid,
   isEmailValid,
   userExistsById,
 } = require("../helpers/db-validators");
 
 const {
   testGet,
-  testPost,
+  createUser,
   testPut,
   testDelete,
 } = require("../controllers/user.controller");
@@ -33,16 +34,21 @@ router.get("/", testGet);
 router.post(
   "/",
   [
+    check("user_name", "El nombre de usuario es obligatorio").not().isEmpty(),
+    check("user_name").custom(isUserNameValid),
     check("name", "El nombre es obligatorio").not().isEmpty(),
+    check("last_name", "El apellido es obligatorio").not().isEmpty(),
+    check("email", "El email no es correcto").isEmail(),
+    check("email").custom(isEmailValid),
     check("password", "El password debe tener mas de 6 dígitos").isLength({
       min: 6,
     }),
-    check("email").custom(isEmailValid),
+    check("phone", "El teléfono no es correcto").isMobilePhone(),
     // check("role", "No es un rol válido").isIn(["ADMIN_ROLE", "USER_ROLE"]),
     //check("role").custom(isRoleValid),
     validateRequest,
   ],
-  testPost
+  createUser
 );
 
 //PETICIÓN PUT
