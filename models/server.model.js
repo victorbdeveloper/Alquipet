@@ -1,6 +1,9 @@
 const express = require("express");
 const cors = require("cors");
 
+const swaggerUi = require("swagger-ui-express");
+const swaggerFile = require("../swagger_output.json");
+
 const { dbConnection } = require("../database/config.db");
 
 /*
@@ -25,6 +28,9 @@ class Server {
 
     //* RUTAS DE MI APLICACIÓN
     this.routes();
+
+    //*SWAGGER GENERATE DOCUMENTATION
+    this.app.use("/doc", swaggerUi.serve, swaggerUi.setup(swaggerFile));
   }
 
   async connectionDB() {
