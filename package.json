@@ -3,13 +3,15 @@
   "version": "1.0.0",
   "description": "Proyecto donde se unen los proyectos 'Alquipet FRONT' y 'Alquipet' y que está destinado a ser del que se haga el despliegue final a un hosting real",
   "main": "index.js",
+  "readme": "./README.md",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node app.js"
+    "start": "node app.js",
+    "swagger-autogen": "node swagger.js"
   },
   "keywords": [],
-  "author": "Víctor Bartolomé (victorbdeveloper)",
-  "license": "MIT",
+  "author": "Víctor Bartolomé (victorbdeveloper@gmail.com)",
+  "license": "./LICENSE.md",
   "dependencies": {
     "axios": "^0.24.0",
     "bcryptjs": "^2.4.3",
@@ -19,14 +21,17 @@
     "express": "^4.17.1",
     "express-fileupload": "^1.2.1",
     "express-validator": "^6.13.0",
-    "google-auth-library": "^7.10.2",
+    "google-auth-library": "^7.10.3",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^6.0.12",
-    "nodemon": "^2.0.15",
-    "yargs": "^17.3.0",
-    "uuid": "^8.3.2"
+    "swagger-ui-express": "^4.2.0",
+    "uuid": "^8.3.2",
+    "yargs": "^17.3.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "nodemon": "^2.0.15",
+    "swagger-autogen": "^2.14.0"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/victorbdeveloper/Alquipet.git"
