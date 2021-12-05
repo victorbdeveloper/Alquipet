@@ -3,7 +3,7 @@ const bcryptjs = require("bcryptjs");
 
 const User = require("../models/user.model");
 
-const testGet = async (req = request, res = response) => {
+const getTest = async (req = request, res = response) => {
   // al desestructurar solo estaremos recibiendo la información de los campos que deseemos, por ej,
   // aquí solo obtendríamos info de queryTest1 y queryTest2 aunque en el body se manden muchos mas campos como por ej: id, name, etc..
   // const {
@@ -31,6 +31,18 @@ const testGet = async (req = request, res = response) => {
   ]);
 
   res.json({ totalUsers, users });
+};
+
+const getUser = async (req = request, res = response) => {
+  const { id } = req.query;
+  // const { id } = req.params;
+
+  const user = await User.findById(id);
+
+  res.json({
+    msg: "Usuario encontrado con éxito en la Base de Datos.",
+    user,
+  });
 };
 
 const createUser = async (req = request, res = response) => {
@@ -116,7 +128,7 @@ const testDelete = async (req = request, res = response) => {
 };
 
 module.exports = {
-  testGet,
+  getUser,
   createUser,
   testPut,
   testDelete,

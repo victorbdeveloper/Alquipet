@@ -1,8 +1,6 @@
 const { Router } = require("express");
 const { check } = require("express-validator");
 
-
-
 const {
   validateJWT,
   validateRequest,
@@ -16,9 +14,8 @@ const {
 } = require("../helpers/db-validators");
 
 const {
-  testGet,
   createUser,
-  testPut,
+  getUser,
   testDelete,
 } = require("../controllers/user.controller");
 
@@ -30,7 +27,21 @@ router.get("/holamundo", (req, res) => {
 });
 
 //PETICIÓN GET
-router.get("/", testGet);
+router.get(
+  /* 
+    #swagger.tags = ['User']
+    #swagger.path = ['/users/find_by_id', ]
+    #swagger.description = 'Endpoint para buscar y obtener un usuario por su id.'
+
+  */
+  "/find_by_id",
+  [
+    check("id", "El id debe de ser de mongo").isMongoId(),
+    check("id").custom(userExistsById),
+    validateRequest,
+  ],
+  getUser
+);
 
 //PETICIÓN POST
 router.post(
@@ -68,7 +79,7 @@ router.put(
     //check("role").custom(isRoleValid),
     validateRequest,
   ],
-  testPut
+  getUser
 );
 
 //PETICIÓN DELETE
