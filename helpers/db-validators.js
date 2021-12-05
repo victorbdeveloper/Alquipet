@@ -10,6 +10,14 @@ const User = require("../models/user.model");
 //   }
 // };
 
+//VERIFICAR SI EL USER_NAME EXISTE
+const isUserNameValid = async (user_name = "") => {
+  const userNameExists = await User.findOne({ user_name });
+  if (userNameExists) {
+    throw new Error(`El nombre de usuario ${user_name} ya esta registrado`);
+  }
+};
+
 //VERIFICAR SI EL CORREO EXISTE
 const isEmailValid = async (email = "") => {
   const emailExists = await User.findOne({ email });
@@ -27,6 +35,7 @@ const userExistsById = async (id = "") => {
 };
 
 module.exports = {
+  isUserNameValid,
   isEmailValid,
   userExistsById,
 };
