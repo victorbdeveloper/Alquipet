@@ -1,6 +1,8 @@
 const { Router } = require("express");
 const { check } = require("express-validator");
 
+
+
 const {
   validateJWT,
   validateRequest,
@@ -32,7 +34,13 @@ router.get("/", testGet);
 
 //PETICIÓN POST
 router.post(
-  "/",
+  /* 
+    #swagger.tags = ['User']
+    #swagger.path = ['/users/create_user', ]
+    #swagger.description = 'Endpoint para crear un usuario.'
+
+  */
+  "/create_user",
   [
     check("user_name", "El nombre de usuario es obligatorio").not().isEmpty(),
     check("user_name").custom(isUserNameValid),
