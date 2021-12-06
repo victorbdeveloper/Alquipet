@@ -4,16 +4,15 @@ const bcryptjs = require("bcryptjs");
 const User = require("../models/user.model");
 const { generateJWT, googleVerify } = require("../helpers/index.helper");
 
-const login = async (req = request, res = response) => {
+const loginEmail = async (req = request, res = response) => {
   const { email, password } = req.body;
 
   try {
     //VERIFICAR SI EL EMAIL EXISTE
     const user = await User.findOne({ email });
-
     if (!user) {
       return res.status(400).json({
-        msg: "Usuario / password incorrectos -->(email)", //borrar luego la ultima parte para no dar pistas del error
+        msg: "Email / password incorrectos -->(email)", //borrar luego la ultima parte para no dar pistas del error
       });
     }
 
@@ -21,7 +20,7 @@ const login = async (req = request, res = response) => {
     if (!user.state) {
       console.log(user);
       return res.status(400).json({
-        msg: "Usuario / password incorrectos -->(state: false)", //borrar luego la ultima parte para no dar pistas del error
+        msg: "Email / password incorrectos -->(state: false)", //borrar luego la ultima parte para no dar pistas del error
       });
     }
 
@@ -29,13 +28,14 @@ const login = async (req = request, res = response) => {
     const isValidPassword = bcryptjs.compareSync(password, user.password);
     if (!isValidPassword) {
       return res.status(400).json({
-        msg: "Usuario / password incorrectos -->(password)", //borrar luego la ultima parte para no dar pistas del error
+        msg: "Email / password incorrectos -->(password)", //borrar luego la ultima parte para no dar pistas del error
       });
     }
 
     //GENERAR EL JWT
     const token = await generateJWT(user.id);
 
+    //RESPUESTA
     res.json({
       user,
       token,
@@ -43,7 +43,7 @@ const login = async (req = request, res = response) => {
   } catch (error) {
     console.log(error);
     res.status(500).json({
-      msg: "Hable con el administrador ",
+      msg: "Algo salió mal. Hable con el administrador del sistema.",
     });
   }
 };
@@ -98,6 +98,6 @@ const loginGoogleSignIn = async (req = request, res = response) => {
 };
 
 module.exports = {
-  login,
+  loginEmail,
   loginGoogleSignIn,
 };

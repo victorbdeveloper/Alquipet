@@ -4,7 +4,8 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/user.model");
 
 const validateJWT = async (req = request, res = response, next) => {
-  const token = req.header("acces_token");
+  const access_token = req.header("Authorization");
+  const token = access_token.split(" ")[1];
 
   if (!token) {
     return res.status(401).json({
@@ -40,8 +41,6 @@ const validateJWT = async (req = request, res = response, next) => {
       msg: "Token no válido",
     });
   }
-
-  console.log(token);
 };
 
 module.exports = {

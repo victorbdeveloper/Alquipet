@@ -52,7 +52,7 @@
     "application/json"
   ],
   "paths": {
-    "\r/login": {
+    "\r/login_email": {
       "post": {
         "tags": [],
         "description": "",
@@ -60,7 +60,7 @@
         "responses": {}
       }
     },
-    "\r/google": {
+    "\r/login_google": {
       "post": {
         "tags": [],
         "description": "",

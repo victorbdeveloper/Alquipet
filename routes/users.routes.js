@@ -37,6 +37,7 @@ router.get(
   */
   "/get_user",
   [
+    validateJWT,
     check("id", "El id debe de ser un id vádilo de MongoDB").isMongoId(),
     check("id").custom(userExistsById),
     validateRequest,
@@ -54,15 +55,18 @@ router.post(
   */
   "/create_user",
   [
-    check("user_name", "El nombre de usuario es obligatorio").not().isEmpty(),
+    check("user_name", "El nombre de usuario es obligatorio").notEmpty(),
     check("user_name").custom(isUserNameValid),
-    check("name", "El nombre es obligatorio").not().isEmpty(),
-    check("last_name", "El apellido es obligatorio").not().isEmpty(),
+    check("name", "El nombre es obligatorio").notEmpty(),
+    check("last_name", "El apellido es obligatorio").notEmpty(),
+    check("email", "El email es obligatorio").notEmpty(),
     check("email", "El email no es correcto").isEmail(),
     check("email").custom(isEmailValid),
+    check("password", "El password es obligatorio").notEmpty(),
     check("password", "El password debe tener mas de 6 dígitos").isLength({
       min: 6,
     }),
+    check("phone", "El teléfono es obligatorio").notEmpty(),
     check("phone", "El teléfono no es correcto").isMobilePhone(),
     //check("role", "No es un rol válido").isIn(["ADMIN_ROLE", "USER_ROLE"]),
     //check("role").custom(isRoleValid),
@@ -81,11 +85,14 @@ router.put(
   */
   "/update_user",
   [
+    validateJWT,
     check("id", "El id debe de ser un id vádilo de MongoDB").isMongoId(),
     check("id").custom(userExistsById),
+    check("password", "El password es obligatorio").notEmpty(),
     check("password", "El password debe tener mas de 6 dígitos").isLength({
       min: 6,
     }),
+    check("phone", "El teléfono es obligatorio").notEmpty(),
     check("phone", "El teléfono no es correcto").isMobilePhone(),
     //check("role").custom(isRoleValid),
     validateRequest,
@@ -103,7 +110,7 @@ router.delete(
   */
   "/delete_user",
   [
-    //validateJWT,
+    validateJWT,
     check("id", "El id debe de ser un id vádilo de MongoDB").isMongoId(),
     check("id").custom(userExistsById),
     validateRequest,
