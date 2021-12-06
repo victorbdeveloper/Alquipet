@@ -47,17 +47,8 @@ const UserSchema = Schema({
       },
     },
   ],
-  published_listings: [
-    {
-      id: {
-        type: Schema.Types.ObjectId,
-        ref: "Listing",
-      },
-    },
-  ],
 });
 
-//TODO: VERIFICAR ESTOS DATOS YA QUE EL USUARIO NO ES EXACTAMENTE IGUAL
 UserSchema.methods.toJSON = function () {
   const { __v, _id, password, ...user } = this.toObject();
   user.uid = _id;

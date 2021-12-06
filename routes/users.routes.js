@@ -16,7 +16,8 @@ const {
 const {
   createUser,
   getUser,
-  testDelete,
+  deleteUser,
+  updateUser,
 } = require("../controllers/user.controller");
 
 const router = Router();
@@ -29,14 +30,14 @@ router.get("/holamundo", (req, res) => {
 //PETICIÓN GET
 router.get(
   /* 
-    #swagger.tags = ['User']
-    #swagger.path = ['/users/find_by_id', ]
-    #swagger.description = 'Endpoint para buscar y obtener un usuario por su id.'
+    #swagger.tags = ['Users']
+    #swagger.path = ['/users/get_user', ]
+    #swagger.description = 'Endpoint para buscar un usuario en la BD por su id y obtenerlo en la respuesta de la petición.'
 
   */
-  "/find_by_id",
+  "/get_user",
   [
-    check("id", "El id debe de ser de mongo").isMongoId(),
+    check("id", "El id debe de ser un id vádilo de MongoDB").isMongoId(),
     check("id").custom(userExistsById),
     validateRequest,
   ],
@@ -46,9 +47,9 @@ router.get(
 //PETICIÓN POST
 router.post(
   /* 
-    #swagger.tags = ['User']
+    #swagger.tags = ['Users']
     #swagger.path = ['/users/create_user', ]
-    #swagger.description = 'Endpoint para crear un usuario.'
+    #swagger.description = 'Endpoint para crear un usuario y añadirlo a la BD.'
 
   */
   "/create_user",
@@ -63,7 +64,7 @@ router.post(
       min: 6,
     }),
     check("phone", "El teléfono no es correcto").isMobilePhone(),
-    // check("role", "No es un rol válido").isIn(["ADMIN_ROLE", "USER_ROLE"]),
+    //check("role", "No es un rol válido").isIn(["ADMIN_ROLE", "USER_ROLE"]),
     //check("role").custom(isRoleValid),
     validateRequest,
   ],
@@ -72,26 +73,42 @@ router.post(
 
 //PETICIÓN PUT
 router.put(
-  "/:id",
+  /* 
+    #swagger.tags = ['Users']
+    #swagger.path = ['/users/update_user', ]
+    #swagger.description = 'Endpoint para modificar un usuario ya creado en la BD.'
+
+  */
+  "/update_user",
   [
-    check("id", `El id no es un id valido de mongo`).isMongoId(),
+    check("id", "El id debe de ser un id vádilo de MongoDB").isMongoId(),
     check("id").custom(userExistsById),
+    check("password", "El password debe tener mas de 6 dígitos").isLength({
+      min: 6,
+    }),
+    check("phone", "El teléfono no es correcto").isMobilePhone(),
     //check("role").custom(isRoleValid),
     validateRequest,
   ],
-  getUser
+  updateUser
 );
 
 //PETICIÓN DELETE
 router.delete(
-  "/:id",
+  /* 
+    #swagger.tags = ['Users']
+    #swagger.path = ['/users/delete_user', ]
+    #swagger.description = 'Endpoint para buscar un usuario en la BD por su id y borrarlo estableciendo el valor del campo state en false.'
+
+  */
+  "/delete_user",
   [
-    validateJWT,
-    check("id", `El id no es un id valido de mongo`).isMongoId(),
+    //validateJWT,
+    check("id", "El id debe de ser un id vádilo de MongoDB").isMongoId(),
     check("id").custom(userExistsById),
     validateRequest,
   ],
-  testDelete
+  deleteUser
 );
 
 module.exports = router;

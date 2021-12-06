@@ -48,14 +48,7 @@ const getUser = async (req = request, res = response) => {
 const createUser = async (req = request, res = response) => {
   //se ha utilizado el operador rest para no tener en cuenta la información que viene en los campos previos y que al generar un usuario
   //en la bd no se almacenen posibles datos añadidos a esos campos por error o con intenciones fraudulentas
-  const {
-    google,
-    state,
-    photo,
-    favorite_listings,
-    published_listings,
-    ...rest
-  } = req.body;
+  const { google, state, photo, favorite_listings, ...rest } = req.body;
   const user = new User(rest);
 
   //ENCRIPTAR LA PASSWORD(HACER HASH)
@@ -72,12 +65,9 @@ const createUser = async (req = request, res = response) => {
   });
 };
 
-const testPut = async (req = request, res = response) => {
-  // al desestructurar solo estaremos recibiendo la información de los campos que deseemos, por ej,
-  // aquí solo obtendríamos info de test1 y test2 aunque en el body se manden muchos mas campos como por ej: id, name, etc..
-  //const { test1, test2 } = req.body;
-  const { id } = req.params;
-  const { _id, email, password, google, ...rest } = req.body;
+const updateUser = async (req = request, res = response) => {
+  const { id } = req.query;
+  const { password, phone, ...rest } = req.body;
 
   //validar si el password existe en la BD
   if (password) {
@@ -86,16 +76,24 @@ const testPut = async (req = request, res = response) => {
     rest.password = bcryptjs.hashSync(password, salt);
   }
 
+  if (phone) {
+    rest.phone = phone;
+  }
+
   //con el new:true se muestran los resultados de los cambios ya producidos
-  const user = await User.findByIdAndUpdate(id, rest, { new: true });
+  const user = await User.findByIdAndUpdate(
+    id,
+    { password: rest.password, phone: rest.phone },
+    { new: true }
+  );
 
   res.json({
-    msg: "peticion PUT a /test en el user.controller.js",
+    msg: "Usuario modificado con éxito.",
     user,
   });
 };
 
-const testDelete = async (req = request, res = response) => {
+const deleteUser = async (req = request, res = response) => {
   // al desestructurar solo estaremos recibiendo la información de los campos que deseemos, por ej,
   // aquí solo obtendríamos info de test1 y test2 aunque en el body se manden muchos mas campos como por ej: id, name, etc..
   //   const { test1, test2 } = req.body;
@@ -107,29 +105,31 @@ const testDelete = async (req = request, res = response) => {
   //   });
   // };
 
-  const { id } = req.params;
+  const { id } = req.query;
+  // const { id } = req.params;
 
   //BORRADO FISICO DE LA BD
   // const user = await User.findByIdAndDelete(id);
 
   //BORRADO CAMBIANDO EL STATE DEL USUARIO PARA QUE PERMANEZCA EN LA BD Y NO SE PIERDA LA INTEGRIDAD REFERENCIAL
-  const uid = req.uid;
+  // const uid = req.uid;
 
   const user = await User.findByIdAndUpdate(
     id,
     { state: false },
-    { new: true } //con el new:true se muestran los resultados de los cambios ya producidos
+    { new: true } //mediante new:true se muestran los resultados de los cambios ya producidos.
   );
 
   res.json({
+    msg: "Usuario eliminado con éxito.",
     user,
-    uid,
+    // uid,
   });
 };
 
 module.exports = {
-  getUser,
   createUser,
-  testPut,
-  testDelete,
+  getUser,
+  updateUser,
+  deleteUser,
 };

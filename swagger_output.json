@@ -33,11 +33,11 @@
       }
     },
     {
-      "name": "Listing",
+      "name": "Listings",
       "description": "Endpoints about Listing´s CRUD"
     },
     {
-      "name": "User",
+      "name": "Users",
       "description": "Endpoints about Users´s CRUD"
     }
   ],
@@ -80,12 +80,12 @@
         }
       }
     },
-    "/users/find_by_id:id": {
+    "/users/get_user": {
       "get": {
         "tags": [
-          "User"
+          "Users"
         ],
-        "description": "Endpoint para crear un usuario.",
+        "description": "Endpoint para buscar un usuario en la BD por su id y obtenerlo en la respuesta de la petición.",
         "parameters": [],
         "responses": {}
       }
@@ -93,38 +93,30 @@
     "/users/create_user": {
       "post": {
         "tags": [
-          "User"
+          "Users"
         ],
-        "description": "Endpoint para crear un usuario.",
+        "description": "Endpoint para crear un usuario y añadirlo a la BD.",
         "parameters": [],
         "responses": {}
       }
     },
-    "\r/{id}": {
+    "/users/update_user": {
       "put": {
-        "tags": [],
-        "description": "",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
+        "tags": [
+          "Users"
         ],
+        "description": "Endpoint para modificar un usuario ya creado en la BD.",
+        "parameters": [],
         "responses": {}
-      },
+      }
+    },
+    "/users/delete_user": {
       "delete": {
-        "tags": [],
-        "description": "",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
+        "tags": [
+          "Users"
         ],
+        "description": "Endpoint para buscar un usuario en la BD por su id y borrarlo estableciendo el valor del campo state en false.",
+        "parameters": [],
         "responses": {}
       }
     }

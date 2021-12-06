@@ -34,11 +34,10 @@ const PetsAllowedSchema = Schema({
   },
 });
 
-//TODO: CAMBIARA POR LOS DATOS DEL PETS_ALLOWED
 PetsAllowedSchema.methods.toJSON = function () {
-  // const { __v, _id, password, ...user } = this.toObject();
-  // user.uid = _id;
-  // return user;
+  const { __v, _id, ...pets_allowed } = this.toObject();
+  pets_allowed.uid = _id;
+  return pets_allowed;
 };
 
 module.exports = model("Pets_allowed", PetsAllowedSchema);

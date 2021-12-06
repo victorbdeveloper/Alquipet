@@ -1,5 +1,3 @@
-"use strict";
-
 const swaggerAutogen = require("swagger-autogen")();
 
 const outputFile = "./swagger_output.json";
@@ -48,15 +46,14 @@ const doc = {
       },
     },
     {
-      name: "Listing",
+      name: "Listings",
       description: "Endpoints about Listing´s CRUD",
     },
     {
-      name: "User",
+      name: "Users",
       description: "Endpoints about Users´s CRUD",
     },
   ],
-
 };
 
 swaggerAutogen(outputFile, endpointsFiles, doc).then(() => {

@@ -1,6 +1,14 @@
 const { Schema, model } = require("mongoose");
 
 const ListingSchema = Schema({
+  created_by: {
+    type: Schema.Types.ObjectId,
+    ref: "User",
+    required: [
+      true,
+      "Establecer el usuario que ha creado el anuncio es obligatorio",
+    ],
+  },
   state: {
     type: Boolean,
     required: [true, "Establecer el estado del anuncio es obligatorio"],
@@ -44,11 +52,10 @@ const ListingSchema = Schema({
   },
 });
 
-//TODO: CAMBIARA POR LOS DATOS DEL LISTING
 ListingSchema.methods.toJSON = function () {
-  // const { __v, _id, password, ...user } = this.toObject();
-  // user.uid = _id;
-  // return user;
+  const { __v, _id, ...listing } = this.toObject();
+  listing.uid = _id;
+  return listing;
 };
 
 module.exports = model("Listing", ListingSchema);

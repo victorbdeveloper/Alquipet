@@ -39,11 +39,10 @@ const AddressSchema = Schema({
   },
 });
 
-//TODO: CAMBIARA POR LOS DATOS DEL ADDRESS
 AddressSchema.methods.toJSON = function () {
-  // const { __v, _id, password, ...user } = this.toObject();
-  // user.uid = _id;
-  // return user;
+  const { __v, _id, ...address } = this.toObject();
+  address.uid = _id;
+  return address;
 };
 
 module.exports = model("Address", AddressSchema);

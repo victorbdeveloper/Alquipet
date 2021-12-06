@@ -21,11 +21,10 @@ const PhotoSchema = Schema({
   },
 });
 
-//TODO: CAMBIARA POR LOS DATOS DEL PHOTO
 PhotoSchema.methods.toJSON = function () {
-  // const { __v, _id, password, ...user } = this.toObject();
-  // user.uid = _id;
-  // return user;
+  const { __v, _id, ...photo } = this.toObject();
+  photo.uid = _id;
+  return photo;
 };
 
 module.exports = model("Photo", PhotoSchema);
