@@ -24,7 +24,7 @@ router.post(
 
 router.post(
   "/login_google",
-  [check("id_token", "El is_token es necesario").notEmpty(), validateRequest],
+  [check("id_token", "El id_token es necesario").notEmpty(), validateRequest],
   loginGoogleSignIn
 );
 

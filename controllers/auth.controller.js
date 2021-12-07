@@ -51,11 +51,13 @@ const loginEmail = async (req = request, res = response) => {
 const loginGoogleSignIn = async (req = request, res = response) => {
   const { id_token } = req.body;
 
+  //console.log(id_token);
+
   try {
     // const googleUser = await googleVerify(id_token);
     // console.log(googleUser);
 
-    const { name, email, img } = await googleVerify(id_token);
+    const { given_name, family_name, email } = await googleVerify(id_token);
 
     //BUSCAMOS EL EMAIL EN LA BD E IGUALAMOS EL RESULTADO DE LA BÚSQUEDA A LA VARIABLE USER
     let user = await User.findOne({ email });
@@ -63,10 +65,12 @@ const loginGoogleSignIn = async (req = request, res = response) => {
     //SI EL USUARIO NO EXISTE EN LA BD, LO CREAMOS
     if (!user) {
       const data = {
-        name,
-        email,
-        password: "asdasdasd",
-        img,
+        user_name: email.split("@")[0],
+        name: given_name,
+        last_name: family_name,
+        email: email,
+        password: "*",
+        phone: "",
         google: true,
       };
 
@@ -77,7 +81,7 @@ const loginGoogleSignIn = async (req = request, res = response) => {
     //SI EL USUARIO TIENE EL "STATE" EN FALSE EN LA BD
     if (!user.state) {
       return res.status(401).json({
-        msg: "Hable con el administrador, usuario bloqueado.",
+        msg: "Usuario bloqueado. Hable con el administrador.",
       });
     }
 

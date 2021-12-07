@@ -25,7 +25,6 @@ const UserSchema = Schema({
   },
   phone: {
     type: String,
-    required: [true, "El teléfono es obligatorio"],
   },
   google: {
     type: Boolean,
