@@ -22,11 +22,6 @@ const {
 
 const router = Router();
 
-//devolución de un text/html (no es común devolver un texto directamente, es mejor devolver un JSON)
-router.get("/holamundo", (req, res) => {
-  res.send("Hello World desde /api/users/holamundo");
-});
-
 //PETICIÓN GET
 router.get(
   /* 
@@ -66,8 +61,7 @@ router.post(
     check("password", "El password debe tener mas de 6 dígitos").isLength({
       min: 6,
     }),
-    check("phone", "El teléfono es obligatorio").notEmpty(),
-    check("phone", "El teléfono no es correcto").isMobilePhone(),
+    check("phone", "El teléfono no tiene un formato válido").optional(true).isMobilePhone(),
     //check("role", "No es un rol válido").isIn(["ADMIN_ROLE", "USER_ROLE"]),
     //check("role").custom(isRoleValid),
     validateRequest,
@@ -88,12 +82,12 @@ router.put(
     validateJWT,
     check("id", "El id debe de ser un id vádilo de MongoDB").isMongoId(),
     check("id").custom(userExistsById),
-    check("password", "El password es obligatorio").notEmpty(),
-    check("password", "El password debe tener mas de 6 dígitos").isLength({
-      min: 6,
-    }),
-    check("phone", "El teléfono es obligatorio").notEmpty(),
-    check("phone", "El teléfono no es correcto").isMobilePhone(),
+    check("password", "El password debe tener mas de 6 dígitos")
+      .optional(true)
+      .isLength({
+        min: 6,
+      }),
+    check("phone", "El teléfono no es correcto").optional(true).isMobilePhone(),
     //check("role").custom(isRoleValid),
     validateRequest,
   ],
