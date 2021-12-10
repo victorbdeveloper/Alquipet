@@ -9,9 +9,19 @@ const Photo = require("../models/photo.model");
 
 async function uploadFiles(uid = "", photos = []) {
   let photosResponse = [];
+  let photosArray = [];
+
+  if (Array.isArray(photos)) {
+    photosArray = photos;
+  }else{
+    photosArray.push(photos);
+  }
+
+  // console.log("AAAAAAAAAAA");
+  // console.log(photosArray);
 
   try {
-    for (const photoIndex of photos) {
+    for (const photoIndex of photosArray) {
       const resp = await cloudinary.uploader.upload(photoIndex.tempFilePath, {
         folder: `Alquipet/${uid}`,
       });

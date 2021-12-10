@@ -9,9 +9,8 @@ const {
 } = require("../middlewares/index.middlewares");
 
 const {
-  //   isUserNameValid,
-  //   isEmailValid,
   userExistsById,
+  listingExistsById,
 } = require("../helpers/index.helper");
 
 const {
@@ -28,8 +27,8 @@ const router = Router();
 router.get(
   "/get_listing_by_id",
   [
-    // check("id", "El id debe de ser un id vádilo de MongoDB").isMongoId(),
-    // check("id").custom(userExistsById),
+    check("id", "El id debe de ser un id vádilo de MongoDB").isMongoId(),
+    check("id").custom(listingExistsById),
     validateRequest,
   ],
   getListingById

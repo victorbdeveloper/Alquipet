@@ -11,12 +11,19 @@ const Address = require("../models/address.model");
 const PetsAllowed = require("../models/pets-allowed.model");
 
 const getListingById = async (req = request, res = response) => {
-  //   const { id } = req.query;
-  //   const user = await User.findById(id);
-  //   res.json({
-  //     msg: "Usuario encontrado con éxito en la Base de Datos.",
-  //     user,
-  //   });
+  const { id } = req.query;
+  const listing = await Listing.findById(id)
+    .populate({
+      path: "address",
+    })
+    .populate({
+      path: "pets_allowed",
+    })
+    .populate("photos");
+  res.json({
+    msg: "Anuncio encontrado con éxito en la Base de Datos.",
+    listing,
+  });
 };
 
 const getFilteredListingPaginated = async (req = request, res = response) => {
@@ -80,7 +87,6 @@ const getFilteredListingPaginated = async (req = request, res = response) => {
   } = req.query;
 
   const queryListing = {
-    // price: { $gt: price_min, $lte: price_max },
     $and: [
       { price: { $gt: parseInt(price_min) - 1 } },
       { price: { $lte: parseInt(price_max) } },
@@ -133,6 +139,7 @@ const getFilteredListingPaginated = async (req = request, res = response) => {
         path: "pets_allowed",
         match: { pets_allowed: { $in: petsAllowed } },
       })
+      .populate("photos")
       .sort(queryListingOrderBy)
       .skip(index_from == 0 ? 0 : Number(index_from) - 1)
       .limit(Number(index_limit)),
