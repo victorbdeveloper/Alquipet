@@ -5,19 +5,16 @@ const PhotoSchema = Schema({
     type: String,
     required: [true, "El nombre del archivo es obligatorio"],
   },
-  mime_type: {
+  public_id_cloudinary: {
     type: String,
-    required: [true, "El tipo de archivo es obligatorio"],
-    emun: ["gif", "jpeg", "png", "svg+xml"],
+    required: [true, "El publicId del archivo en Cloudinary es obligatorio"],
   },
-  length: {
-    type: Number,
-    required: [true, "Establecer el tamaño del archivo es obligatorio"],
-  },
-  compressed: {
-    type: Boolean,
-    required: [true, "Establecer si el archivo esta comprimido es obligatorio"],
-    default: false,
+  url_cloudinary: {
+    type: String,
+    required: [
+      true,
+      "La url de cloudinary donde esta guardada la imágen es obligatorio",
+    ],
   },
 });
 

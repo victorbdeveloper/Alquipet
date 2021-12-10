@@ -3,22 +3,6 @@ const bcryptjs = require("bcryptjs");
 
 const User = require("../models/user.model");
 
-// const getTest = async (req = request, res = response) => {
-
-//   //si no se le pasa un indice desde el que empezar en la url el indice será 0 por defecto
-//   //si no se le pasa un limite en la url el limite será 5 por defecto
-//   const { indexFrom = 0, limit = 5 } = req.query;
-
-//   const query = { state: true };
-
-//   const [totalUsers, users] = await Promise.all([
-//     User.countDocuments(query),
-//     User.find(query).skip(Number(indexFrom)).limit(Number(limit)),
-//   ]);
-
-//   res.json({ totalUsers, users });
-// };
-
 const getUser = async (req = request, res = response) => {
   const { id } = req.query;
 
@@ -67,7 +51,7 @@ const updateUser = async (req = request, res = response) => {
   }
 
   //comprueba si no se le ha pasado ningún dato a la petición
-  if (!password || !phone) {
+  if (!password && !phone) {
     res.json({
       msg: "No se ha facilitado ningún dato.",
     });
