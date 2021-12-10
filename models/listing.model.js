@@ -31,21 +31,11 @@ const ListingSchema = Schema({
     ],
   },
   photos: [
-    
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Photo",
-      },
-    
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Photo",
+    },
   ],
-  // photos: [
-  //   {
-  //     id: {
-  //       type: Schema.Types.ObjectId,
-  //       ref: "Photo",
-  //     },
-  //   },
-  // ],
   price: {
     type: Number,
     required: [

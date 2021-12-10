@@ -14,9 +14,10 @@ const {
 } = require("../helpers/index.helper");
 
 const {
-  createListing,
   getListingById,
+  getFilteredMyListingsPaginated,
   getFilteredListingPaginated,
+  createListing,
   updateListing,
   deleteListing,
 } = require("../controllers/listing.controller");
@@ -32,6 +33,67 @@ router.get(
     validateRequest,
   ],
   getListingById
+);
+
+//PETICIÓN GET
+
+router.get(
+  "/get_filtered_my_listings_paginated",
+  [
+    validateJWT,
+    check("id", "El id debe de ser un id vádilo de MongoDB").isMongoId(),
+    check("id").custom(userExistsById),
+    check("price_max", "El precio debe ser un número")
+      .optional(true)
+      .isNumeric(),
+    check("price_min", "El precio debe ser un número")
+      .optional(true)
+      .isNumeric(),
+    check("dogs", "Establecer si se admiten perros debe ser true o false")
+      .optional(true)
+      .isBoolean(),
+    check("cats", "Establecer si se admiten gatos debe ser true o false")
+      .optional(true)
+      .isBoolean(),
+    check("birds", "Establecer si se admiten pájaros debe ser true o false")
+      .optional(true)
+      .isBoolean(),
+    check("rodents", "Establecer si se admiten roedores debe ser true o false")
+      .optional(true)
+      .isBoolean(),
+    check(
+      "exotic",
+      "Establecer si se admiten mascotas exóticas debe ser true o false"
+    )
+      .optional(true)
+      .isBoolean(),
+    check(
+      "others",
+      "Establecer si se admiten mascotas exóticas debe ser true o false"
+    )
+      .optional(true)
+      .isBoolean(),
+    check(
+      "order_by",
+      "La opción debe ser una de la siguientes [price_max, price_min, date_newest, date_oldest]"
+    )
+      .optional(true)
+      .isIn(["price_max", "price_min", "date_newest", "date_oldest"]),
+    check(
+      "index_from",
+      "Establecer si se admiten mascotas exóticas debe ser true o false"
+    )
+      .optional(true)
+      .isNumeric(),
+    check(
+      "index_limit",
+      "Establecer si se admiten mascotas exóticas debe ser true o false"
+    )
+      .optional(true)
+      .isNumeric(),
+    validateRequest,
+  ],
+  getFilteredMyListingsPaginated
 );
 
 //PETICIÓN GET
