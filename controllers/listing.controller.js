@@ -4,6 +4,10 @@ const {
   generateLatLong,
   uploadFiles,
   deleteFiles,
+  getAddressListingFiltered,
+  getPetsAllowedListingFiltered,
+  getQueryFilterListing,
+  getQueryOrderByListing,
 } = require("../helpers/index.helper");
 
 const Listing = require("../models/listing.model");
@@ -26,107 +30,130 @@ const getListingById = async (req = request, res = response) => {
   });
 };
 
-const getFilteredListingPaginated = async (req = request, res = response) => {
+const getFilteredMyListingsPaginated = async (
+  req = request,
+  res = response
+) => {
   //FILTRADO DE DIRECCIÓN
   const { province = "" } = req.query;
   let addresses = [];
-  const regex = new RegExp(province, "i"); //expresión regular para no tener en cuenta las mayus y minus
 
   if (province.toString().trim().length > 0) {
-    [addresses] = await Promise.all([
-      Address.find(
-        {
-          province: regex,
-        },
-        { _id: 1 }
-      ),
-    ]);
+    [addresses] = await getAddressListingFiltered(province);
   }
 
   //FILTRADO DE MASCOTAS
-  const {
+  const pets = ({
     dogs = false,
     cats = false,
     birds = false,
     rodents = false,
     exotic = false,
     others = false,
-  } = req.query;
+  } = req.query);
 
-  let petsAllowed = [];
-
-  let queryPets = {
-    dogs: dogs,
-    cats: cats,
-    birds: birds,
-    rodents: rodents,
-    exotic: exotic,
-    others: others != false ? { $exists: true } : false,
-  };
-
-  if (dogs === false) delete queryPets.dogs;
-  if (cats === false) delete queryPets.cats;
-  if (birds === false) delete queryPets.birds;
-  if (rodents === false) delete queryPets.rodents;
-  if (exotic === false) delete queryPets.exotic;
-  if (others === false) delete queryPets.others;
-
-  if (Object.entries(queryPets).length > 0) {
-    [petsAllowed] = await Promise.all([
-      PetsAllowed.find(queryPets, { _id: 1 }),
-    ]);
-  }
+  let petsAllowed = await getPetsAllowedListingFiltered(pets);
 
   //FILTRADO DE ANUNCIOS
-  const {
+  const params = ({
+    id = "",
     price_min = 0,
     price_max = 9999999999,
     order_by = "",
     index_from = 0,
     index_limit = 10,
-  } = req.query;
+  } = req.query);
 
-  const queryListing = {
-    $and: [
-      { price: { $gt: parseInt(price_min) - 1 } },
-      { price: { $lte: parseInt(price_max) } },
-    ],
-    state: true,
-    address: { $in: addresses },
-    pets_allowed: { $in: petsAllowed },
-  };
+  const queryListing = getQueryFilterListing(params, addresses, petsAllowed);
 
-  if (addresses.length === 0) delete queryListing.address;
-  if (petsAllowed.length === 0) delete queryListing.pets_allowed;
+  const queryListingOrderBy = getQueryOrderByListing(order_by);
 
-  const queryListingOrderBy = {
-    date_publication: -1,
-    price: 0,
-  };
+  const [totalListings, listings] = await Promise.all([
+    Listing.countDocuments(queryListing).where({ created_by: id }),
 
-  switch (order_by) {
-    case "price_max":
-      queryListingOrderBy.price = -1;
-      delete queryListingOrderBy.date_publication;
-      break;
-    case "price_min":
-      queryListingOrderBy.price = 1;
-      delete queryListingOrderBy.date_publication;
-      break;
-    case "date_newest":
-      queryListingOrderBy.date_publication = -1;
-      delete queryListingOrderBy.price;
-      break;
-    case "date_oldest":
-      queryListingOrderBy.date_publication = 11;
-      delete queryListingOrderBy.price;
-      break;
-    default:
-      res.status(500).json({
-        msg: "Error en el servidor --> (orderBy)",
-      });
-      break;
+    Listing.find(queryListing)
+      .where({ created_by: id })
+      .populate({
+        path: "address",
+        match: { addres: { $in: addresses } },
+      })
+      .populate({
+        path: "pets_allowed",
+        match: { pets_allowed: { $in: petsAllowed } },
+      })
+      .populate("photos")
+      .sort(queryListingOrderBy)
+      .skip(
+        index_from < 1
+          ? 0
+          : index_from === undefined
+          ? 0
+          : Number(index_from) - 1
+      )
+      .limit(Number(index_limit)),
+  ]);
+
+  res.json({
+    "Total anuncios encontrados aplicando los filtros:":
+      listings.length > 0 ? totalListings : 0,
+    "Anuncios mostrados: ": listings.length > 0 ? listings.length : 0,
+    "Índice del primer anuncio mostrado: ":
+      index_from === undefined && listings.length > 0
+        ? 1
+        : index_from === undefined && listings.length == 0
+        ? 0
+        : index_from < 1 && listings.length > 0
+        ? 1
+        : index_from < 1 && listings.length == 0
+        ? 0
+        : listings.length > 0
+        ? Number(index_from)
+        : 0,
+    "Índice del último anuncio mostrado: ":
+      (index_from === undefined || index_from < 1) && listings.length > 0
+        ? listings.length
+        : (index_from === undefined || index_from < 1) && listings.length == 0
+        ? 0
+        : index_from > 0 && listings.length > 0
+        ? Number(index_from) + listings.length - 1
+        : 0,
+    results: listings,
+  });
+};
+
+const getFilteredListingPaginated = async (req = request, res = response) => {
+  //FILTRADO DE DIRECCIÓN
+  const { province = "" } = req.query;
+  let addresses = [];
+
+  if (province.toString().trim().length > 0) {
+    [addresses] = await getAddressListingFiltered(province);
   }
+
+  //FILTRADO DE MASCOTAS
+  const pets = ({
+    dogs = false,
+    cats = false,
+    birds = false,
+    rodents = false,
+    exotic = false,
+    others = false,
+  } = req.query);
+
+  let petsAllowed = await getPetsAllowedListingFiltered(pets);
+
+  //FILTRADO DE ANUNCIOS
+  const params = ({
+    price_min = 0,
+    price_max = 9999999999,
+    order_by = "",
+    index_from,
+    index_limit = 10,
+  } = req.query);
+
+  const queryListing = getQueryFilterListing(params, addresses, petsAllowed);
+
+  const queryListingOrderBy = getQueryOrderByListing(order_by);
 
   const [totalListings, listings] = await Promise.all([
     Listing.countDocuments(queryListing),
@@ -141,7 +168,13 @@ const getFilteredListingPaginated = async (req = request, res = response) => {
       })
       .populate("photos")
       .sort(queryListingOrderBy)
-      .skip(index_from == 0 ? 0 : Number(index_from) - 1)
+      .skip(
+        index_from < 1
+          ? 0
+          : index_from === undefined
+          ? 0
+          : Number(index_from) - 1
+      )
       .limit(Number(index_limit)),
   ]);
 
@@ -149,12 +182,24 @@ const getFilteredListingPaginated = async (req = request, res = response) => {
     "Total anuncios encontrados aplicando los filtros:":
       listings.length > 0 ? totalListings : 0,
     "Anuncios mostrados: ": listings.length > 0 ? listings.length : 0,
-    "Índice primer anuncio mostrado: ":
-      index_from == 0 ? 1 : listings.length > 0 ? Number(index_from) : 0,
-    "Índice último anuncio mostrado: ":
-      index_from == 0
-        ? listings.length
+    "Índice del primer anuncio mostrado: ":
+      index_from === undefined && listings.length > 0
+        ? 1
+        : index_from === undefined && listings.length == 0
+        ? 0
+        : index_from < 1 && listings.length > 0
+        ? 1
+        : index_from < 1 && listings.length == 0
+        ? 0
         : listings.length > 0
+        ? Number(index_from)
+        : 0,
+    "Índice del último anuncio mostrado: ":
+      (index_from === undefined || index_from < 1) && listings.length > 0
+        ? listings.length
+        : (index_from === undefined || index_from < 1) && listings.length == 0
+        ? 0
+        : index_from > 0 && listings.length > 0
         ? Number(index_from) + listings.length - 1
         : 0,
     results: listings,
@@ -285,9 +330,10 @@ const deleteListing = async (req = request, res = response) => {
 //TODO: FALTAN DE AÑADIR ADD_PHOTO, DELETE_PHOTO, ADD_FAVORITE, DELETE_FAVORITE
 
 module.exports = {
-  createListing,
   getListingById,
+  getFilteredMyListingsPaginated,
   getFilteredListingPaginated,
+  createListing,
   updateListing,
   deleteListing,
 };
