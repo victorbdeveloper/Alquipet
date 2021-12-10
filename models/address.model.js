@@ -5,7 +5,7 @@ const AddressSchema = Schema({
     type: String,
     required: [true, "La provincia es obligatoria"],
   },
-  Municipality: {
+  municipality: {
     type: String,
     required: [true, "El municipio es obligatorio"],
   },
@@ -31,11 +31,9 @@ const AddressSchema = Schema({
   },
   latitude: {
     type: String,
-    required: [true, "La latitud es obligatoria"],
   },
   longitude: {
     type: String,
-    required: [true, "La longitud es obligatoria"],
   },
 });
 

@@ -7,11 +7,10 @@ const {
 } = require("../middlewares/index.middlewares");
 
 const {
-  // isRoleValid,
   isUserNameValid,
   isEmailValid,
   userExistsById,
-} = require("../helpers/db-validators");
+} = require("../helpers/index.helper");
 
 const {
   createUser,
@@ -24,12 +23,6 @@ const router = Router();
 
 //PETICIÓN GET
 router.get(
-  /* 
-    #swagger.tags = ['Users']
-    #swagger.path = ['/users/get_user', ]
-    #swagger.description = 'Endpoint para buscar un usuario en la BD por su id y obtenerlo en la respuesta de la petición.'
-
-  */
   "/get_user",
   [
     validateJWT,
@@ -42,12 +35,6 @@ router.get(
 
 //PETICIÓN POST
 router.post(
-  /* 
-    #swagger.tags = ['Users']
-    #swagger.path = ['/users/create_user', ]
-    #swagger.description = 'Endpoint para crear un usuario y añadirlo a la BD.'
-
-  */
   "/create_user",
   [
     check("user_name", "El nombre de usuario es obligatorio").notEmpty(),
@@ -61,9 +48,9 @@ router.post(
     check("password", "El password debe tener mas de 6 dígitos").isLength({
       min: 6,
     }),
-    check("phone", "El teléfono no tiene un formato válido").optional(true).isMobilePhone(),
-    //check("role", "No es un rol válido").isIn(["ADMIN_ROLE", "USER_ROLE"]),
-    //check("role").custom(isRoleValid),
+    check("phone", "El teléfono no tiene un formato válido")
+      .optional(true)
+      .isMobilePhone(),
     validateRequest,
   ],
   createUser
@@ -71,12 +58,6 @@ router.post(
 
 //PETICIÓN PUT
 router.put(
-  /* 
-    #swagger.tags = ['Users']
-    #swagger.path = ['/users/update_user', ]
-    #swagger.description = 'Endpoint para modificar un usuario ya creado en la BD.'
-
-  */
   "/update_user",
   [
     validateJWT,
@@ -88,7 +69,6 @@ router.put(
         min: 6,
       }),
     check("phone", "El teléfono no es correcto").optional(true).isMobilePhone(),
-    //check("role").custom(isRoleValid),
     validateRequest,
   ],
   updateUser
@@ -96,12 +76,6 @@ router.put(
 
 //PETICIÓN DELETE
 router.delete(
-  /* 
-    #swagger.tags = ['Users']
-    #swagger.path = ['/users/delete_user', ]
-    #swagger.description = 'Endpoint para buscar un usuario en la BD por su id y borrarlo estableciendo el valor del campo state en false.'
-
-  */
   "/delete_user",
   [
     validateJWT,

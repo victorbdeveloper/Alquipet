@@ -11,7 +11,6 @@ const ListingSchema = Schema({
   },
   state: {
     type: Boolean,
-    required: [true, "Establecer el estado del anuncio es obligatorio"],
     default: true,
   },
   address: {
@@ -21,10 +20,9 @@ const ListingSchema = Schema({
   },
   date_publication: {
     type: Date,
-    required: [true, "Establecer la fecha del anuncio es obligatorio"],
     default: Date.now,
   },
-  pets_allowes: {
+  pets_allowed: {
     type: Schema.Types.ObjectId,
     ref: "Pets_allowed",
     required: [

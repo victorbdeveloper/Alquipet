@@ -3,30 +3,22 @@ const { Schema, model } = require("mongoose");
 const PetsAllowedSchema = Schema({
   dogs: {
     type: Boolean,
-    required: [true, "Establecer si se admiten perros es obligatorio"],
     default: false,
   },
   cats: {
     type: Boolean,
-    required: [true, "Establecer si se admiten gatos es obligatorio"],
     default: false,
   },
   birds: {
     type: Boolean,
-    required: [true, "Establecer si se admiten pájaros es obligatorio"],
     default: false,
   },
   rodents: {
     type: Boolean,
-    required: [true, "Establecer si se admiten roedores es obligatorio"],
     default: false,
   },
   exotic: {
     type: Boolean,
-    required: [
-      true,
-      "Establecer si se admiten mascotas exóticas es obligatorio",
-    ],
     default: false,
   },
   others: {

@@ -1,8 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-
-const swaggerUi = require("swagger-ui-express");
-const swaggerFile = require("../swagger_output.json");
+const fileUpload = require("express-fileupload");
 
 const { dbConnection } = require("../database/config.db");
 
@@ -28,9 +26,6 @@ class Server {
 
     //* RUTAS DE MI APLICACIÓN
     this.routes();
-
-    //*SWAGGER GENERATE DOCUMENTATION
-    this.app.use("/doc", swaggerUi.serve, swaggerUi.setup(swaggerFile));
   }
 
   async connectionDB() {
@@ -47,6 +42,15 @@ class Server {
 
     //*SERVIR CONTENIDO ESTATICO PROPORCIONADO POR EL INDEX.HTML DE LA CARPETA PUBLIC
     this.app.use(express.static("public"));
+
+    //*Fileupload - Carga de archivos
+    this.app.use(
+      fileUpload({
+        useTempFiles: true,
+        tempFileDir: "/tmp/",
+        createParentPath: true,
+      })
+    );
   }
 
   //*SERVIR CONTENIDO PROPORCIONADO POR LA RUTA A LA QUE SE NAVEGE
