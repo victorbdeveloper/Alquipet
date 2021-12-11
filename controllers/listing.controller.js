@@ -13,6 +13,7 @@ const {
 const Listing = require("../models/listing.model");
 const Address = require("../models/address.model");
 const PetsAllowed = require("../models/pets-allowed.model");
+const User = require("../models/user.model");
 
 const getListingById = async (req = request, res = response) => {
   const { id } = req.query;
@@ -87,16 +88,17 @@ const getFilteredMyListingsPaginated = async (
     Listing.find(queryListing)
       .where({ created_by: id })
       .where({ state: true })
+      //TODO: INTEGRAR EL POPULATE DE USER Y FAVORITES SI NO SE VE!
       .populate({
         path: "created_by",
       })
       .populate({
         path: "address",
-        match: { addres: { $in: addresses } },
+        // match: { addres: { $in: addresses } }, //TODO: ELIMINAR AL ACABAR SI NO HA DADO PROBLEMAS!!!
       })
       .populate({
         path: "pets_allowed",
-        match: { pets_allowed: { $in: petsAllowed } },
+        // match: { pets_allowed: { $in: petsAllowed } }, //TODO: ELIMINAR AL ACABAR SI NO HA DADO PROBLEMAS!!!
       })
       .populate("photos")
       .sort(queryListingOrderBy)
@@ -187,11 +189,11 @@ const getFilteredListingPaginated = async (req = request, res = response) => {
       })
       .populate({
         path: "address",
-        match: { addres: { $in: addresses } },
+        // match: { addres: { $in: addresses } }, //TODO: ELIMINAR AL ACABAR SI NO HA DADO PROBLEMAS!!!
       })
       .populate({
         path: "pets_allowed",
-        match: { pets_allowed: { $in: petsAllowed } },
+        // match: { pets_allowed: { $in: petsAllowed } }, //TODO: ELIMINAR AL ACABAR SI NO HA DADO PROBLEMAS!!!
       })
       .populate("photos")
       .sort(queryListingOrderBy)
@@ -315,19 +317,7 @@ const createListing = async (req = request, res = response) => {
 };
 
 const updateListing = async (req = request, res = response) => {
-  const { id_listing, id_user } = req.query;
-
-  //VALIDAR SI EL ANUNCIO PERTENECE AL USUARIO
-  const validateListing = await Listing.find({
-    _id: id_listing,
-    created_by: id_user,
-  });
-
-  if (validateListing.length === 0) {
-    res.json({
-      msg: "Error al comprobar la pertenencia del anuncio al usuario",
-    });
-  }
+  const { id_listing } = req.query;
 
   //CREAR OBJETO ADDRESS CON LOS NUEVOS VALORES Y CAMBIAR TABLA ADDRESSES
   const { province, municipality, postal_code, street, number, flour, letter } =
@@ -360,11 +350,9 @@ const updateListing = async (req = request, res = response) => {
     });
   }
 
-  const addressQuery = await Address.findByIdAndUpdate(
-    validateListing[0].address._id,
-    address,
-    { new: true }
-  );
+  await Address.findByIdAndUpdate(validateListing[0].address._id, address, {
+    new: true,
+  });
 
   //CREAR OBJETO PETS_ALLOWED CON LOS NUEVOS VALORES Y CAMBIAR TABLA PETS_ALLOWED
   const { dogs, cats, birds, rodents, exotic, others } = req.body;
@@ -376,7 +364,7 @@ const updateListing = async (req = request, res = response) => {
     exotic,
     others,
   };
-  const petsQuery = await PetsAllowed.findByIdAndUpdate(
+  await PetsAllowed.findByIdAndUpdate(
     validateListing[0].pets_allowed._id,
     pets,
     { new: true }
@@ -415,27 +403,13 @@ const updateListing = async (req = request, res = response) => {
 };
 
 const deleteListing = async (req = request, res = response) => {
-  const { id_listing, id_user } = req.query;
-
-  //VALIDAR SI EL ANUNCIO PERTENECE AL USUARIO
-  const validateListing = await Listing.find({
-    _id: id_listing,
-    created_by: id_user,
-  });
-
-  if (validateListing.length === 0) {
-    res.json({
-      msg: "Error al comprobar la pertenencia del anuncio al usuario",
-    });
-  }
+  const { id_listing } = req.query;
 
   const listing = await Listing.findByIdAndUpdate(id_listing, {
     state: false,
   }).where({
     state: true,
   });
-
-  console.log(listing);
 
   if (listing === null) {
     res.json({
@@ -449,6 +423,47 @@ const deleteListing = async (req = request, res = response) => {
 };
 
 //TODO: FALTAN DE AÑADIR ADD_PHOTO, DELETE_PHOTO, ADD_FAVORITE, DELETE_FAVORITE
+const getFilteredUserFavoritesListingsPaginated = async (
+  req = request,
+  res = response
+) => {};
+
+const addListingToUserFavoritesListings = async (
+  req = request,
+  res = response
+) => {
+  const { id_listing, id_user } = req.query;
+
+  const user = await User.findByIdAndUpdate(
+    id_user,
+    {
+      $push: { favorite_listings: id_listing },
+    },
+    { new: true }
+  ).where({
+    state: true,
+  });
+
+  if (user === null) {
+    res.json({
+      msg: "Sin resultados de la Base de Datos. Ningún anuncio encontrado.",
+    });
+  }
+
+  res.json({
+    msg: "Anuncio modificado con éxito.",
+    user,
+  });
+};
+
+const deleteListingToUserFavoritesListings = async (
+  req = request,
+  res = response
+) => {};
+const addPhotosToListing = async (req = request, res = response) => {};
+const deletePhotosToListing = async (req = request, res = response) => {};
+
+//TODO: DOCUMENTAR TODO EL CÓDIGO, QUITAR TODOS LOS LOGS Y ARREGLAR LOS WARNINGS!
 
 module.exports = {
   getListingById,
@@ -457,4 +472,9 @@ module.exports = {
   createListing,
   updateListing,
   deleteListing,
+  getFilteredUserFavoritesListingsPaginated,
+  addListingToUserFavoritesListings,
+  deleteListingToUserFavoritesListings,
+  addPhotosToListing,
+  deletePhotosToListing,
 };

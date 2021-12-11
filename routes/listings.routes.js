@@ -11,6 +11,9 @@ const {
 const {
   userExistsById,
   listingExistsById,
+  listingCreatedByCurrentUser,
+  listingAlredysFavorite,
+  photoInListingCreatedByCurrentUser,
 } = require("../helpers/index.helper");
 
 const {
@@ -20,6 +23,11 @@ const {
   createListing,
   updateListing,
   deleteListing,
+  getFilteredUserFavoritesListingsPaginated,
+  addListingToUserFavoritesListings,
+  deleteListingToUserFavoritesListings,
+  addPhotosToListing,
+  deletePhotosToListing,
 } = require("../controllers/listing.controller");
 
 const router = Router();
@@ -36,7 +44,6 @@ router.get(
 );
 
 //PETICIÓN GET
-
 router.get(
   "/get_filtered_my_listings_paginated",
   [
@@ -228,6 +235,7 @@ router.put(
       "El id del anuncio debe de ser un id vádilo de MongoDB"
     ).isMongoId(),
     check("id_listing").custom(listingExistsById),
+    check("id_listing", "id_user").custom(listingCreatedByCurrentUser),
     check("province", "El campo provincia no puede estar vacío").notEmpty(),
     check("municipality", "El campo municipio no puede estar vacío").notEmpty(),
     check(
@@ -292,11 +300,151 @@ router.delete(
       "El id del anuncio debe de ser un id vádilo de MongoDB"
     ).isMongoId(),
     check("id_listing").custom(listingExistsById),
+    check("id_listing", "id_user").custom(listingCreatedByCurrentUser),
     validateRequest,
   ],
   deleteListing
 );
 
-//TODO: FALTAN DE AÑADIR ADD_PHOTO, DELETE_PHOTO, ADD_FAVORITE, DELETE_FAVORITE
+//PETICIÓN GET
+router.get(
+  "/get_filtered_user_favorites_listings_paginated",
+  [
+    validateJWT,
+    check("id_user", "El id debe de ser un id vádilo de MongoDB").isMongoId(),
+    check("id_user").custom(userExistsById),
+    check("price_max", "El precio debe ser un número")
+      .optional(true)
+      .isNumeric(),
+    check("price_min", "El precio debe ser un número")
+      .optional(true)
+      .isNumeric(),
+    check("dogs", "Establecer si se admiten perros debe ser true o false")
+      .optional(true)
+      .isBoolean(),
+    check("cats", "Establecer si se admiten gatos debe ser true o false")
+      .optional(true)
+      .isBoolean(),
+    check("birds", "Establecer si se admiten pájaros debe ser true o false")
+      .optional(true)
+      .isBoolean(),
+    check("rodents", "Establecer si se admiten roedores debe ser true o false")
+      .optional(true)
+      .isBoolean(),
+    check(
+      "exotic",
+      "Establecer si se admiten mascotas exóticas debe ser true o false"
+    )
+      .optional(true)
+      .isBoolean(),
+    check(
+      "others",
+      "Establecer si se admiten mascotas exóticas debe ser true o false"
+    )
+      .optional(true)
+      .isBoolean(),
+    check(
+      "order_by",
+      "La opción debe ser una de la siguientes [price_max, price_min, date_newest, date_oldest]"
+    )
+      .optional(true)
+      .isIn(["price_max", "price_min", "date_newest", "date_oldest"]),
+    check(
+      "index_from",
+      "Establecer si se admiten mascotas exóticas debe ser true o false"
+    )
+      .optional(true)
+      .isNumeric(),
+    check(
+      "index_limit",
+      "Establecer si se admiten mascotas exóticas debe ser true o false"
+    )
+      .optional(true)
+      .isNumeric(),
+    validateRequest,
+  ],
+  getFilteredUserFavoritesListingsPaginated
+);
+
+//PETICIÓN PUT
+router.put(
+  "/add_listing_to_user_favorites_listings",
+  [
+    validateJWT,
+    check(
+      "id_user",
+      "El id del usuario debe de ser un id vádilo de MongoDB"
+    ).isMongoId(),
+    check("id_user").custom(userExistsById),
+    check(
+      "id_listing",
+      "El id del anuncio debe de ser un id vádilo de MongoDB"
+    ).isMongoId(),
+    check("id_listing").custom(listingExistsById),
+    check("id_listing", "id_user").custom(listingAlredysFavorite),
+    validateRequest,
+  ],
+  addListingToUserFavoritesListings
+);
+
+//PETICIÓN DELETE
+router.delete(
+  "/delete_listing_to_user_favorites_listings",
+  [
+    validateJWT,
+    check(
+      "id_user",
+      "El id del usuario debe de ser un id vádilo de MongoDB"
+    ).isMongoId(),
+    check("id_user").custom(userExistsById),
+    check(
+      "id_listing",
+      "El id del anuncio debe de ser un id vádilo de MongoDB"
+    ).isMongoId(),
+    check("id_listing").custom(listingExistsById),
+    validateRequest,
+  ],
+  deleteListingToUserFavoritesListings
+);
+
+//PETICIÓN PUT
+router.put(
+  "/add_photos_to_listing",
+  [
+    validateJWT,
+    check("id_user", "El id debe de ser un id vádilo de MongoDB").isMongoId(),
+    check("id_user").custom(listingExistsById),
+    check(
+      "id_listing",
+      "El id del anuncio debe de ser un id vádilo de MongoDB"
+    ).isMongoId(),
+    check("id_listing").custom(listingExistsById),
+    check("id_listing", "id_user").custom(listingCreatedByCurrentUser),
+    validateFiles,
+    validateRequest,
+  ],
+  addPhotosToListing
+);
+
+//PETICIÓN DELETE
+router.delete(
+  "/delete_photos_to_listing",
+  [
+    validateJWT,
+    check("id_user", "El id debe de ser un id vádilo de MongoDB").isMongoId(),
+    check("id_user").custom(listingExistsById),
+    check(
+      "id_listing",
+      "El id del anuncio debe de ser un id vádilo de MongoDB"
+    ).isMongoId(),
+    check("id_listing").custom(listingExistsById),
+    check("id_listing", "id_user").custom(listingCreatedByCurrentUser),
+    //TODO: COMPROBAR ESTE MIDDLEWARE!!
+    check("id_listing", "photos").custom(photoInListingCreatedByCurrentUser),
+
+    validateRequest,
+  ],
+  deletePhotosToListing
+);
 
 module.exports = router;

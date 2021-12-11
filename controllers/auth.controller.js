@@ -37,6 +37,7 @@ const loginEmail = async (req = request, res = response) => {
 
     //RESPUESTA
     res.json({
+      msg: "Login correcto. Bienvenido.",
       user,
       token,
     });
@@ -51,6 +52,7 @@ const loginEmail = async (req = request, res = response) => {
 const loginGoogleSignIn = async (req = request, res = response) => {
   const { id_token } = req.body;
 
+  //TODO: COMPROBAR ESTOS LOGS Y PONER LOS PASOS A SEGUIR PARA OBTENER EL TOKEN QUE HAY QUE PEGAR EN POSTMAN PARA LOGEAR CON GOOGLE
   //console.log(id_token);
 
   try {
@@ -88,7 +90,9 @@ const loginGoogleSignIn = async (req = request, res = response) => {
     //GENERAR EL JWT
     const token = await generateJWT(user.id);
 
+    //RESPUESTA
     res.json({
+      msg: "Login correcto. Bienvenido.",
       user,
       token,
     });

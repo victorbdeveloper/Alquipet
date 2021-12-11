@@ -42,6 +42,8 @@ async function uploadFiles(uid = "", photos = []) {
   return photosResponse;
 }
 
+
+//TODO:!!!!!!!!!!
 async function deleteFiles(uid = "", photos = []) {
   //BUSCAMOS EN LA BD TODAS LAS FOTOS QUE PERTENEZCAN AL USUARIO CON ID = uid Y QUE TENGAN DE ID = LOS IDS DEL ARRAY photos
   // ##si se pudieran conseguir los url_cloudinary al mismo tiempo que se borran las fotos de la bd sería genial!!

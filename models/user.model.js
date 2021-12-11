@@ -40,12 +40,19 @@ const UserSchema = Schema({
   },
   favorite_listings: [
     {
-      id: {
-        type: Schema.Types.ObjectId,
-        ref: "Listing",
-      },
+      type: Schema.Types.ObjectId,
+      ref: "Listing",
     },
   ],
+  //TODO: ELIMINAR AL ACABAR SI NO HA DADO PROBLEMAS!!!
+  // favorite_listings: [
+  //   {
+  //     id: {
+  //       type: Schema.Types.ObjectId,
+  //       ref: "Listing",
+  //     },
+  //   },
+  // ],
 });
 
 UserSchema.methods.toJSON = function () {
