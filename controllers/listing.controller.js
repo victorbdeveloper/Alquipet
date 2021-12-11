@@ -267,8 +267,10 @@ const createListing = async (req = request, res = response) => {
     ({ dogs, cats, birds, rodents, exotic, others } = req.body)
   );
 
+  console.log(req.files);
+
   //PHOTOS
-  if (req.files !== null) {
+  if (req.files !== null && req.files !== undefined) {
     try {
       photos = await uploadFiles(created_by, req.files.photos);
 
@@ -399,8 +401,6 @@ const updateListing = async (req = request, res = response) => {
     .populate("pets_allowed", { __v: 0 })
     .populate("photos", { __v: 0 });
 
-  console.log(listing);
-
   if (listing === null) {
     return res.json({
       msg: "Sin resultados de la Base de Datos. Ningún anuncio encontrado.",
@@ -425,7 +425,6 @@ const deleteListing = async (req = request, res = response) => {
   if (validateListing.length === 0) {
     return res.json({
       msg: "Error al verificar la pertenencia del anuncio al usuario",
-      // user,
     });
   }
 
@@ -590,7 +589,6 @@ const addListingToUserFavoritesListings = async (
     .where({
       state: true,
     })
-
     .populate({
       path: "favorite_listings",
       populate: {
@@ -642,26 +640,96 @@ const addListingToUserFavoritesListings = async (
   });
 };
 
-//TODO: FALTAN DE AÑADIR ADD_PHOTO, DELETE_PHOTO, ADD_FAVORITE, DELETE_FAVORITE
 const deleteListingToUserFavoritesListings = async (
   req = request,
   res = response
 ) => {
-  //VALIDAR SI EL ANUNCIO PERTENECE AL USUARIO
-  const validateListing = await Listing.find({
-    _id: id_listing,
-    created_by: id_user,
+  const { id_listing, id_user } = req.query;
+
+  //VERIFICAR SI EL ANUNCIO QUE QUIERE ELIMINARSE DE FAVORITOS ESTA AÑADIDO A LOS FAVORITOS DEL USUARIO
+  const validateListing = await User.find({
+    $and: [{ id: id_user }, { favorite_listings: id_listing }],
   });
 
-  if (validateListing.length === 0) {
+  if (validateListing.length == 0) {
     return res.json({
-      msg: "Error al comprobar la pertenencia al usuario del anuncio",
-      // user,
+      msg: `El anuncio con id ${id_listing} no esta añadido a la lista de favoritos del usuario`,
     });
   }
+
+  const user = await User.findByIdAndUpdate(
+    id_user,
+    {
+      $pull: { favorite_listings: id_listing },
+    },
+    { new: true }
+  )
+    .select({
+      password: 0,
+      google: 0,
+      state: 0,
+      __v: 0,
+    })
+    .where({
+      state: true,
+    })
+    .populate({
+      path: "favorite_listings",
+      populate: {
+        path: "created_by",
+        model: "User",
+        select: {
+          password: 0,
+          google: 0,
+          favorite_listings: 0,
+          state: 0,
+          __v: 0,
+        },
+      },
+    })
+    .populate({
+      path: "favorite_listings",
+      populate: {
+        path: "address",
+        model: "Address",
+        select: { __v: 0 },
+      },
+    })
+    .populate({
+      path: "favorite_listings",
+      populate: {
+        path: "pets_allowed",
+        model: "Pets_allowed",
+        select: { __v: 0 },
+      },
+    })
+    .populate({
+      path: "favorite_listings",
+      populate: {
+        path: "photos",
+        model: "Photo",
+        select: { __v: 0 },
+      },
+    });
+
+  if (user === null) {
+    return res.json({
+      msg: "Sin resultados de la Base de Datos. Ningún anuncio encontrado.",
+    });
+  }
+
+  return res.json({
+    msg: "Anuncio eliminado de favoritos con éxito.",
+    user,
+  });
 };
 
 const addPhotosToListing = async (req = request, res = response) => {
+  const { id_user, id_listing } = req.query;
+
+  let photos;
+  let idPhotos = [];
+
   //VALIDAR SI EL ANUNCIO PERTENECE AL USUARIO
   const validateListing = await Listing.find({
     _id: id_listing,
@@ -671,11 +739,64 @@ const addPhotosToListing = async (req = request, res = response) => {
   if (validateListing.length === 0) {
     return res.json({
       msg: "Error al comprobar la pertenencia al usuario del anuncio",
-      // user,
     });
   }
+
+  //PHOTOS
+  if (req.files !== null && req.files !== undefined) {
+    try {
+      photos = await uploadFiles(id_user, req.files.photos);
+
+      for (const photo of photos) {
+        idPhotos.push(photo._id);
+      }
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({
+        msg: "Ha ocurrido un error en el servidor cuando se ha intentado subir las fotos a Cloudinary.",
+      });
+    }
+  } else {
+    return res.status(400).json({
+      msg: "No se ha incluido ninguna imágen para añadirla al anuncio.",
+    });
+  }
+
+  //AÑADIMOS LAS FOTOS A LA BD
+  if (photos !== undefined) {
+    for (const photo of photos) {
+      await photo.save();
+    }
+  }
+
+  //ACTUALIZAMOS EL LISTING
+  const listing = await Listing.findByIdAndUpdate(
+    id_listing,
+    {
+      $push: { photos: photos },
+    },
+    { new: true } //con new:true se muestran los resultados de los cambios ya producidos
+  )
+    .where({ state: true })
+    .populate("created_by", {
+      password: 0,
+      google: 0,
+      favorite_listings: 0,
+      state: 0,
+      __v: 0,
+    })
+    .populate("address", { __v: 0 })
+    .populate("pets_allowed", { __v: 0 })
+    .populate("photos", { __v: 0 });
+
+  //RESPUESTA
+  return res.json({
+    msg: "Imágenes añadidas con éxito",
+    listing,
+  });
 };
 
+//TODO: FALTAN DE AÑADIR DELETE_PHOTO
 const deletePhotosToListing = async (req = request, res = response) => {
   //VALIDAR SI EL ANUNCIO PERTENECE AL USUARIO
   const validateListing = await Listing.find({
@@ -686,10 +807,15 @@ const deletePhotosToListing = async (req = request, res = response) => {
   if (validateListing.length === 0) {
     return res.json({
       msg: "Error al comprobar la pertenencia al usuario del anuncio",
-      // user,
     });
   }
   //COMPROBAR SI LAS PHOTOS PERTENECEN AL LISTING
+
+  //RESPUESTA
+  return res.json({
+    msg: "Imágenes eliminadas con éxito",
+    listing,
+  });
 };
 
 //TODO: DOCUMENTAR TODO EL CÓDIGO, QUITAR TODOS LOS LOGS Y ARREGLAR LOS WARNINGS!

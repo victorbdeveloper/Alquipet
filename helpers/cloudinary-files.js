@@ -13,12 +13,9 @@ async function uploadFiles(uid = "", photos = []) {
 
   if (Array.isArray(photos)) {
     photosArray = photos;
-  }else{
+  } else {
     photosArray.push(photos);
   }
-
-  // console.log("AAAAAAAAAAA");
-  // console.log(photosArray);
 
   try {
     for (const photoIndex of photosArray) {
@@ -41,7 +38,6 @@ async function uploadFiles(uid = "", photos = []) {
 
   return photosResponse;
 }
-
 
 //TODO:!!!!!!!!!!
 async function deleteFiles(uid = "", photos = []) {

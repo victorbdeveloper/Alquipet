@@ -407,7 +407,7 @@ router.put(
   [
     validateJWT,
     check("id_user", "El id debe de ser un id vádilo de MongoDB").isMongoId(),
-    check("id_user").custom(listingExistsById),
+    check("id_user").custom(userExistsById),
     check(
       "id_listing",
       "El id del anuncio debe de ser un id vádilo de MongoDB"
@@ -425,7 +425,7 @@ router.delete(
   [
     validateJWT,
     check("id_user", "El id debe de ser un id vádilo de MongoDB").isMongoId(),
-    check("id_user").custom(listingExistsById),
+    check("id_user").custom(userExistsById),
     check(
       "id_listing",
       "El id del anuncio debe de ser un id vádilo de MongoDB"
