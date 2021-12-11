@@ -268,8 +268,10 @@ router.put(
       "price",
       "El precio del alquiler tiene que ser un número"
     ).isNumeric(),
-    check("description", "El campo description hay que pasarlo aunque esté vacío")
-      .isString(),
+    check(
+      "description",
+      "El campo description hay que pasarlo aunque esté vacío"
+    ).isString(),
     validateRequest,
   ],
   updateListing
@@ -280,8 +282,16 @@ router.delete(
   "/delete_listing",
   [
     validateJWT,
-    // check("id", "El id debe de ser un id vádilo de MongoDB").isMongoId(),
-    // check("id").custom(userExistsById),
+    check(
+      "id_user",
+      "El id del usuario debe de ser un id vádilo de MongoDB"
+    ).isMongoId(),
+    check("id_user").custom(userExistsById),
+    check(
+      "id_listing",
+      "El id del anuncio debe de ser un id vádilo de MongoDB"
+    ).isMongoId(),
+    check("id_listing").custom(listingExistsById),
     validateRequest,
   ],
   deleteListing

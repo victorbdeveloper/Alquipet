@@ -17,6 +17,7 @@ const PetsAllowed = require("../models/pets-allowed.model");
 const getListingById = async (req = request, res = response) => {
   const { id } = req.query;
   const listing = await Listing.findById(id)
+    .where({ state: true })
     .populate({
       path: "created_by",
     })
@@ -27,6 +28,13 @@ const getListingById = async (req = request, res = response) => {
       path: "pets_allowed",
     })
     .populate("photos");
+
+  if (listing === null) {
+    res.json({
+      msg: "Sin resultados de la Base de Datos. Ningún anuncio encontrado.",
+    });
+  }
+
   res.json({
     msg: "Anuncio encontrado con éxito en la Base de Datos.",
     listing,
@@ -72,10 +80,13 @@ const getFilteredMyListingsPaginated = async (
   const queryListingOrderBy = getQueryOrderByListing(order_by);
 
   const [totalListings, listings] = await Promise.all([
-    Listing.countDocuments(queryListing).where({ created_by: id }),
+    Listing.countDocuments(queryListing)
+      .where({ created_by: id })
+      .where({ state: true }),
 
     Listing.find(queryListing)
       .where({ created_by: id })
+      .where({ state: true })
       .populate({
         path: "created_by",
       })
@@ -98,6 +109,12 @@ const getFilteredMyListingsPaginated = async (
       )
       .limit(Number(index_limit)),
   ]);
+
+  if (listings === null) {
+    res.json({
+      msg: "Sin resultados de la Base de Datos. Ningún anuncio encontrado.",
+    });
+  }
 
   res.json({
     "Total anuncios encontrados aplicando los filtros:":
@@ -162,8 +179,9 @@ const getFilteredListingPaginated = async (req = request, res = response) => {
   const queryListingOrderBy = getQueryOrderByListing(order_by);
 
   const [totalListings, listings] = await Promise.all([
-    Listing.countDocuments(queryListing),
+    Listing.countDocuments(queryListing).where({ state: true }),
     Listing.find(queryListing)
+      .where({ state: true })
       .populate({
         path: "created_by",
       })
@@ -186,6 +204,12 @@ const getFilteredListingPaginated = async (req = request, res = response) => {
       )
       .limit(Number(index_limit)),
   ]);
+
+  if (listings === null) {
+    res.json({
+      msg: "Sin resultados de la Base de Datos. Ningún anuncio encontrado.",
+    });
+  }
 
   res.json({
     "Total anuncios encontrados aplicando los filtros:":
@@ -295,7 +319,6 @@ const updateListing = async (req = request, res = response) => {
 
   //VALIDAR SI EL ANUNCIO PERTENECE AL USUARIO
   const validateListing = await Listing.find({
-    // $and: [{ _id: id_listing }, { created_by: createListing }],
     _id: id_listing,
     created_by: id_user,
   });
@@ -368,6 +391,7 @@ const updateListing = async (req = request, res = response) => {
     { price: price, description: description },
     { new: true } //con new:true se muestran los resultados de los cambios ya producidos
   )
+    .where({ state: true })
     .populate({
       path: "created_by",
     })
@@ -379,6 +403,12 @@ const updateListing = async (req = request, res = response) => {
     })
     .populate("photos");
 
+  if (listing === null) {
+    res.json({
+      msg: "Sin resultados de la Base de Datos. Ningún anuncio encontrado.",
+    });
+  }
+
   res.json({
     msg: "Anuncio modificado con éxito.",
     listing,
@@ -386,6 +416,18 @@ const updateListing = async (req = request, res = response) => {
 };
 
 const deleteListing = async (req = request, res = response) => {
+  //VALIDAR SI EL ANUNCIO PERTENECE AL USUARIO
+  const validateListing = await Listing.find({
+    _id: id_listing,
+    created_by: id_user,
+  });
+
+  if (validateListing.length === 0) {
+    res.json({
+      msg: "Error al comprobar la pertenencia al usuario del anuncio",
+      // user,
+    });
+  }
   //   const { id } = req.query;
   //   //BORRADO FISICO DE LA BD
   //   // const user = await User.findByIdAndDelete(id);
