@@ -73,7 +73,7 @@ router.get(
       .isBoolean(),
     check(
       "others",
-      "Establecer si se admiten mascotas exóticas debe ser true o false"
+      "Establecer si se admiten otro tipo de mascotas debe ser true o false"
     )
       .optional(true)
       .isBoolean(),
@@ -85,13 +85,13 @@ router.get(
       .isIn(["price_max", "price_min", "date_newest", "date_oldest"]),
     check(
       "index_from",
-      "Establecer si se admiten mascotas exóticas debe ser true o false"
+      "El indice por el que empezar a mostrar anuncios debe ser un número"
     )
       .optional(true)
       .isNumeric(),
     check(
       "index_limit",
-      "Establecer si se admiten mascotas exóticas debe ser true o false"
+      "El indice hasta el que se quieren mostrar anuncios debe ser un número"
     )
       .optional(true)
       .isNumeric(),
@@ -130,7 +130,7 @@ router.get(
       .isBoolean(),
     check(
       "others",
-      "Establecer si se admiten mascotas exóticas debe ser true o false"
+      "Establecer si se admiten otro tipo de mascotas debe ser true o false"
     )
       .optional(true)
       .isBoolean(),
@@ -142,13 +142,13 @@ router.get(
       .isIn(["price_max", "price_min", "date_newest", "date_oldest"]),
     check(
       "index_from",
-      "Establecer si se admiten mascotas exóticas debe ser true o false"
+      "El indice por el que empezar a mostrar anuncios debe ser un número"
     )
       .optional(true)
       .isNumeric(),
     check(
       "index_limit",
-      "Establecer si se admiten mascotas exóticas debe ser true o false"
+      "El indice hasta el que se quieren mostrar anuncios debe ser un número"
     )
       .optional(true)
       .isNumeric(),
@@ -334,7 +334,7 @@ router.get(
       .isBoolean(),
     check(
       "others",
-      "Establecer si se admiten mascotas exóticas debe ser true o false"
+      "Establecer si se admiten otro tipo de mascotas debe ser true o false"
     )
       .optional(true)
       .isBoolean(),
@@ -346,13 +346,13 @@ router.get(
       .isIn(["price_max", "price_min", "date_newest", "date_oldest"]),
     check(
       "index_from",
-      "Establecer si se admiten mascotas exóticas debe ser true o false"
+      "El indice por el que empezar a mostrar anuncios debe ser un número"
     )
       .optional(true)
       .isNumeric(),
     check(
       "index_limit",
-      "Establecer si se admiten mascotas exóticas debe ser true o false"
+      "El indice hasta el que se quieren mostrar anuncios debe ser un número"
     )
       .optional(true)
       .isNumeric(),
