@@ -11,9 +11,6 @@ const {
 const {
   userExistsById,
   listingExistsById,
-  listingCreatedByCurrentUser,
-  listingAlredysFavorite,
-  photoInListingCreatedByCurrentUser,
 } = require("../helpers/index.helper");
 
 const {
@@ -76,7 +73,7 @@ router.get(
       .isBoolean(),
     check(
       "others",
-      "Establecer si se admiten mascotas exóticas debe ser true o false"
+      "Establecer si se admiten otro tipo de mascotas debe ser true o false"
     )
       .optional(true)
       .isBoolean(),
@@ -88,13 +85,13 @@ router.get(
       .isIn(["price_max", "price_min", "date_newest", "date_oldest"]),
     check(
       "index_from",
-      "Establecer si se admiten mascotas exóticas debe ser true o false"
+      "El indice por el que empezar a mostrar anuncios debe ser un número"
     )
       .optional(true)
       .isNumeric(),
     check(
       "index_limit",
-      "Establecer si se admiten mascotas exóticas debe ser true o false"
+      "El indice hasta el que se quieren mostrar anuncios debe ser un número"
     )
       .optional(true)
       .isNumeric(),
@@ -133,7 +130,7 @@ router.get(
       .isBoolean(),
     check(
       "others",
-      "Establecer si se admiten mascotas exóticas debe ser true o false"
+      "Establecer si se admiten otro tipo de mascotas debe ser true o false"
     )
       .optional(true)
       .isBoolean(),
@@ -145,13 +142,13 @@ router.get(
       .isIn(["price_max", "price_min", "date_newest", "date_oldest"]),
     check(
       "index_from",
-      "Establecer si se admiten mascotas exóticas debe ser true o false"
+      "El indice por el que empezar a mostrar anuncios debe ser un número"
     )
       .optional(true)
       .isNumeric(),
     check(
       "index_limit",
-      "Establecer si se admiten mascotas exóticas debe ser true o false"
+      "El indice hasta el que se quieren mostrar anuncios debe ser un número"
     )
       .optional(true)
       .isNumeric(),
@@ -235,7 +232,6 @@ router.put(
       "El id del anuncio debe de ser un id vádilo de MongoDB"
     ).isMongoId(),
     check("id_listing").custom(listingExistsById),
-    check("id_listing", "id_user").custom(listingCreatedByCurrentUser),
     check("province", "El campo provincia no puede estar vacío").notEmpty(),
     check("municipality", "El campo municipio no puede estar vacío").notEmpty(),
     check(
@@ -300,7 +296,6 @@ router.delete(
       "El id del anuncio debe de ser un id vádilo de MongoDB"
     ).isMongoId(),
     check("id_listing").custom(listingExistsById),
-    check("id_listing", "id_user").custom(listingCreatedByCurrentUser),
     validateRequest,
   ],
   deleteListing
@@ -339,7 +334,7 @@ router.get(
       .isBoolean(),
     check(
       "others",
-      "Establecer si se admiten mascotas exóticas debe ser true o false"
+      "Establecer si se admiten otro tipo de mascotas debe ser true o false"
     )
       .optional(true)
       .isBoolean(),
@@ -351,13 +346,13 @@ router.get(
       .isIn(["price_max", "price_min", "date_newest", "date_oldest"]),
     check(
       "index_from",
-      "Establecer si se admiten mascotas exóticas debe ser true o false"
+      "El indice por el que empezar a mostrar anuncios debe ser un número"
     )
       .optional(true)
       .isNumeric(),
     check(
       "index_limit",
-      "Establecer si se admiten mascotas exóticas debe ser true o false"
+      "El indice hasta el que se quieren mostrar anuncios debe ser un número"
     )
       .optional(true)
       .isNumeric(),
@@ -381,7 +376,6 @@ router.put(
       "El id del anuncio debe de ser un id vádilo de MongoDB"
     ).isMongoId(),
     check("id_listing").custom(listingExistsById),
-    check("id_listing", "id_user").custom(listingAlredysFavorite),
     validateRequest,
   ],
   addListingToUserFavoritesListings
@@ -419,7 +413,6 @@ router.put(
       "El id del anuncio debe de ser un id vádilo de MongoDB"
     ).isMongoId(),
     check("id_listing").custom(listingExistsById),
-    check("id_listing", "id_user").custom(listingCreatedByCurrentUser),
     validateFiles,
     validateRequest,
   ],
@@ -438,9 +431,6 @@ router.delete(
       "El id del anuncio debe de ser un id vádilo de MongoDB"
     ).isMongoId(),
     check("id_listing").custom(listingExistsById),
-    check("id_listing", "id_user").custom(listingCreatedByCurrentUser),
-    //TODO: COMPROBAR ESTE MIDDLEWARE!!
-    check("id_listing", "photos").custom(photoInListingCreatedByCurrentUser),
 
     validateRequest,
   ],

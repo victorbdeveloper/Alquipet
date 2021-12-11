@@ -1,6 +1,12 @@
 //FUNCIÓN QUE GENERA LA QUERY PARA FILTRAR LOS ANUNCIOS
-function getQueryFilterListing(params, addresses, petsAllowed) {
+function getQueryFilterListing(
+  params,
+  addresses,
+  petsAllowed,
+  inListingsArray
+) {
   let queryListing = {
+    _id: { $in: inListingsArray },
     $and: [
       {
         price: {
@@ -22,6 +28,7 @@ function getQueryFilterListing(params, addresses, petsAllowed) {
     pets_allowed: { $in: petsAllowed },
   };
 
+  if (inListingsArray === undefined) delete queryListing._id;
   if (addresses.length === 0) delete queryListing.address;
   if (petsAllowed.length === 0) delete queryListing.pets_allowed;
 

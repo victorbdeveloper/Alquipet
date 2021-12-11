@@ -19,16 +19,16 @@ const getListingById = async (req = request, res = response) => {
   const { id } = req.query;
   const listing = await Listing.findById(id)
     .where({ state: true })
-    .populate({
-      path: "created_by",
+    .populate("created_by", {
+      password: 0,
+      google: 0,
+      favorite_listings: 0,
+      state: 0,
+      __v: 0,
     })
-    .populate({
-      path: "address",
-    })
-    .populate({
-      path: "pets_allowed",
-    })
-    .populate("photos");
+    .populate("address", { __v: 0 })
+    .populate("pets_allowed", { __v: 0 })
+    .populate("photos", { __v: 0 });
 
   if (listing === null) {
     res.json({
@@ -36,7 +36,7 @@ const getListingById = async (req = request, res = response) => {
     });
   }
 
-  res.json({
+  return res.json({
     msg: "Anuncio encontrado con éxito en la Base de Datos.",
     listing,
   });
@@ -88,19 +88,16 @@ const getFilteredMyListingsPaginated = async (
     Listing.find(queryListing)
       .where({ created_by: id })
       .where({ state: true })
-      //TODO: INTEGRAR EL POPULATE DE USER Y FAVORITES SI NO SE VE!
-      .populate({
-        path: "created_by",
+      .populate("created_by", {
+        password: 0,
+        google: 0,
+        favorite_listings: 0,
+        state: 0,
+        __v: 0,
       })
-      .populate({
-        path: "address",
-        // match: { addres: { $in: addresses } }, //TODO: ELIMINAR AL ACABAR SI NO HA DADO PROBLEMAS!!!
-      })
-      .populate({
-        path: "pets_allowed",
-        // match: { pets_allowed: { $in: petsAllowed } }, //TODO: ELIMINAR AL ACABAR SI NO HA DADO PROBLEMAS!!!
-      })
-      .populate("photos")
+      .populate("address", { __v: 0 })
+      .populate("pets_allowed", { __v: 0 })
+      .populate("photos", { __v: 0 })
       .sort(queryListingOrderBy)
       .skip(
         index_from < 1
@@ -113,12 +110,12 @@ const getFilteredMyListingsPaginated = async (
   ]);
 
   if (listings === null) {
-    res.json({
+    return res.json({
       msg: "Sin resultados de la Base de Datos. Ningún anuncio encontrado.",
     });
   }
 
-  res.json({
+  return res.json({
     "Total anuncios encontrados aplicando los filtros:":
       listings.length > 0 ? totalListings : 0,
     "Anuncios mostrados: ": listings.length > 0 ? listings.length : 0,
@@ -184,18 +181,16 @@ const getFilteredListingPaginated = async (req = request, res = response) => {
     Listing.countDocuments(queryListing).where({ state: true }),
     Listing.find(queryListing)
       .where({ state: true })
-      .populate({
-        path: "created_by",
+      .populate("created_by", {
+        password: 0,
+        google: 0,
+        favorite_listings: 0,
+        state: 0,
+        __v: 0,
       })
-      .populate({
-        path: "address",
-        // match: { addres: { $in: addresses } }, //TODO: ELIMINAR AL ACABAR SI NO HA DADO PROBLEMAS!!!
-      })
-      .populate({
-        path: "pets_allowed",
-        // match: { pets_allowed: { $in: petsAllowed } }, //TODO: ELIMINAR AL ACABAR SI NO HA DADO PROBLEMAS!!!
-      })
-      .populate("photos")
+      .populate("address", { __v: 0 })
+      .populate("pets_allowed", { __v: 0 })
+      .populate("photos", { __v: 0 })
       .sort(queryListingOrderBy)
       .skip(
         index_from < 1
@@ -208,12 +203,12 @@ const getFilteredListingPaginated = async (req = request, res = response) => {
   ]);
 
   if (listings === null) {
-    res.json({
+    return res.json({
       msg: "Sin resultados de la Base de Datos. Ningún anuncio encontrado.",
     });
   }
 
-  res.json({
+  return res.json({
     "Total anuncios encontrados aplicando los filtros:":
       listings.length > 0 ? totalListings : 0,
     "Anuncios mostrados: ": listings.length > 0 ? listings.length : 0,
@@ -262,7 +257,7 @@ const createListing = async (req = request, res = response) => {
     }
   } catch (error) {
     console.log(error);
-    res.status(500).json({
+    return res.status(500).json({
       msg: "Ha ocurrido un error en el servidor.",
     });
   }
@@ -282,7 +277,7 @@ const createListing = async (req = request, res = response) => {
       }
     } catch (error) {
       console.log(error);
-      res.status(500).json({
+      return res.status(500).json({
         msg: "Ha ocurrido un error en el servidor cuando se ha intentado subir las fotos a Cloudinary.",
       });
     }
@@ -310,18 +305,32 @@ const createListing = async (req = request, res = response) => {
   }
 
   //RESPUESTA
-  res.json({
+  return res.json({
     msg: "Anuncio creado con éxito",
     listing,
   });
 };
 
 const updateListing = async (req = request, res = response) => {
-  const { id_listing } = req.query;
+  const { id_listing, id_user } = req.query;
+
+  //VALIDAR SI EL ANUNCIO PERTENECE AL USUARIO
+  const validateListing = await Listing.find({
+    _id: id_listing,
+    created_by: id_user,
+  });
+
+  if (validateListing.length === 0) {
+    return res.json({
+      msg: "Error al verificar la pertenencia del anuncio al usuario",
+      // user,
+    });
+  }
 
   //CREAR OBJETO ADDRESS CON LOS NUEVOS VALORES Y CAMBIAR TABLA ADDRESSES
   const { province, municipality, postal_code, street, number, flour, letter } =
     req.body;
+
   const address = {
     province,
     municipality,
@@ -345,7 +354,7 @@ const updateListing = async (req = request, res = response) => {
     }
   } catch (error) {
     console.log(error);
-    res.status(500).json({
+    return res.status(500).json({
       msg: "Ha ocurrido un error en el servidor.",
     });
   }
@@ -379,31 +388,46 @@ const updateListing = async (req = request, res = response) => {
     { new: true } //con new:true se muestran los resultados de los cambios ya producidos
   )
     .where({ state: true })
-    .populate({
-      path: "created_by",
+    .populate("created_by", {
+      password: 0,
+      google: 0,
+      favorite_listings: 0,
+      state: 0,
+      __v: 0,
     })
-    .populate({
-      path: "address",
-    })
-    .populate({
-      path: "pets_allowed",
-    })
-    .populate("photos");
+    .populate("address", { __v: 0 })
+    .populate("pets_allowed", { __v: 0 })
+    .populate("photos", { __v: 0 });
+
+  console.log(listing);
 
   if (listing === null) {
-    res.json({
+    return res.json({
       msg: "Sin resultados de la Base de Datos. Ningún anuncio encontrado.",
     });
   }
 
-  res.json({
+  return res.json({
     msg: "Anuncio modificado con éxito.",
     listing,
   });
 };
 
 const deleteListing = async (req = request, res = response) => {
-  const { id_listing } = req.query;
+  const { id_listing, id_user } = req.query;
+
+  //VALIDAR SI EL ANUNCIO PERTENECE AL USUARIO
+  const validateListing = await Listing.find({
+    _id: id_listing,
+    created_by: id_user,
+  });
+
+  if (validateListing.length === 0) {
+    return res.json({
+      msg: "Error al verificar la pertenencia del anuncio al usuario",
+      // user,
+    });
+  }
 
   const listing = await Listing.findByIdAndUpdate(id_listing, {
     state: false,
@@ -412,21 +436,126 @@ const deleteListing = async (req = request, res = response) => {
   });
 
   if (listing === null) {
-    res.json({
+    return res.json({
       msg: "El anuncio que se intenta eliminar no existe. Ningún anuncio encontrado.",
     });
   }
 
-  res.json({
-    msg: "Anuncio modificado con éxito.",
+  return res.json({
+    msg: "Anuncio eliminado con éxito.",
+    listing,
   });
 };
 
-//TODO: FALTAN DE AÑADIR ADD_PHOTO, DELETE_PHOTO, ADD_FAVORITE, DELETE_FAVORITE
 const getFilteredUserFavoritesListingsPaginated = async (
   req = request,
   res = response
-) => {};
+) => {
+  const { id_user } = req.query;
+
+  //SE OBTIENEN TODOS LOS ANUNCIOS FAVORITOS DEL USUARIO
+  const [favoritedListings] = await User.find(
+    { _id: id_user },
+    { favorite_listings: 1, _id: 0 }
+  );
+
+  //FILTRADO DE DIRECCIÓN
+  const { province = "" } = req.query;
+  let addresses = [];
+
+  if (province.toString().trim().length > 0) {
+    [addresses] = await getAddressListingFiltered(province);
+  }
+
+  //FILTRADO DE MASCOTAS
+  const pets = ({
+    dogs = false,
+    cats = false,
+    birds = false,
+    rodents = false,
+    exotic = false,
+    others = false,
+  } = req.query);
+
+  let petsAllowed = await getPetsAllowedListingFiltered(pets);
+
+  //FILTRADO DE ANUNCIOS
+  const params = ({
+    id = "",
+    price_min = 0,
+    price_max = 9999999999,
+    order_by = "",
+    index_from = 0,
+    index_limit = 10,
+  } = req.query);
+
+  const queryListing = getQueryFilterListing(
+    params,
+    addresses,
+    petsAllowed,
+    favoritedListings.favorite_listings
+  );
+
+  const queryListingOrderBy = getQueryOrderByListing(order_by);
+
+  const [totalListings, listings] = await Promise.all([
+    Listing.countDocuments(queryListing).where({ state: true }),
+    Listing.find(queryListing)
+      .where({ state: true })
+      .populate("created_by", {
+        password: 0,
+        google: 0,
+        favorite_listings: 0,
+        state: 0,
+        __v: 0,
+      })
+      .populate("address", { __v: 0 })
+      .populate("pets_allowed", { __v: 0 })
+      .populate("photos", { __v: 0 })
+      .sort(queryListingOrderBy)
+      .skip(
+        index_from < 1
+          ? 0
+          : index_from === undefined
+          ? 0
+          : Number(index_from) - 1
+      )
+      .limit(Number(index_limit)),
+  ]);
+
+  if (listings === null) {
+    return res.json({
+      msg: "Sin resultados de la Base de Datos. Ningún anuncio encontrado.",
+    });
+  }
+
+  return res.json({
+    "Total anuncios encontrados aplicando los filtros:":
+      listings.length > 0 ? totalListings : 0,
+    "Anuncios mostrados: ": listings.length > 0 ? listings.length : 0,
+    "Índice del primer anuncio mostrado: ":
+      index_from === undefined && listings.length > 0
+        ? 1
+        : index_from === undefined && listings.length == 0
+        ? 0
+        : index_from < 1 && listings.length > 0
+        ? 1
+        : index_from < 1 && listings.length == 0
+        ? 0
+        : listings.length > 0
+        ? Number(index_from)
+        : 0,
+    "Índice del último anuncio mostrado: ":
+      (index_from === undefined || index_from < 1) && listings.length > 0
+        ? listings.length
+        : (index_from === undefined || index_from < 1) && listings.length == 0
+        ? 0
+        : index_from > 0 && listings.length > 0
+        ? Number(index_from) + listings.length - 1
+        : 0,
+    results: listings,
+  });
+};
 
 const addListingToUserFavoritesListings = async (
   req = request,
@@ -434,34 +563,134 @@ const addListingToUserFavoritesListings = async (
 ) => {
   const { id_listing, id_user } = req.query;
 
+  //VERIFICAR SI UN ANUNCIO QUE QUIERE AÑADIRSE A FAVORITOS YA ESTA AÑADIDO A LOS FAVORITOS DEL USUARIO
+  const validateListing = await User.find({
+    $and: [{ id: id_user }, { favorite_listings: id_listing }],
+  });
+
+  if (validateListing.length > 0) {
+    return res.json({
+      msg: `El anuncio con id ${id_listing} ya esta añadido a la lista de favoritos del usuario`,
+    });
+  }
+
   const user = await User.findByIdAndUpdate(
     id_user,
     {
       $push: { favorite_listings: id_listing },
     },
     { new: true }
-  ).where({
-    state: true,
-  });
+  )
+    .select({
+      password: 0,
+      google: 0,
+      state: 0,
+      __v: 0,
+    })
+    .where({
+      state: true,
+    })
+
+    .populate({
+      path: "favorite_listings",
+      populate: {
+        path: "created_by",
+        model: "User",
+        select: {
+          password: 0,
+          google: 0,
+          favorite_listings: 0,
+          state: 0,
+          __v: 0,
+        },
+      },
+    })
+    .populate({
+      path: "favorite_listings",
+      populate: {
+        path: "address",
+        model: "Address",
+        select: { __v: 0 },
+      },
+    })
+    .populate({
+      path: "favorite_listings",
+      populate: {
+        path: "pets_allowed",
+        model: "Pets_allowed",
+        select: { __v: 0 },
+      },
+    })
+    .populate({
+      path: "favorite_listings",
+      populate: {
+        path: "photos",
+        model: "Photo",
+        select: { __v: 0 },
+      },
+    });
 
   if (user === null) {
-    res.json({
+    return res.json({
       msg: "Sin resultados de la Base de Datos. Ningún anuncio encontrado.",
     });
   }
 
-  res.json({
-    msg: "Anuncio modificado con éxito.",
+  return res.json({
+    msg: "Anuncio añadido a favoritos con éxito.",
     user,
   });
 };
 
+//TODO: FALTAN DE AÑADIR ADD_PHOTO, DELETE_PHOTO, ADD_FAVORITE, DELETE_FAVORITE
 const deleteListingToUserFavoritesListings = async (
   req = request,
   res = response
-) => {};
-const addPhotosToListing = async (req = request, res = response) => {};
-const deletePhotosToListing = async (req = request, res = response) => {};
+) => {
+  //VALIDAR SI EL ANUNCIO PERTENECE AL USUARIO
+  const validateListing = await Listing.find({
+    _id: id_listing,
+    created_by: id_user,
+  });
+
+  if (validateListing.length === 0) {
+    return res.json({
+      msg: "Error al comprobar la pertenencia al usuario del anuncio",
+      // user,
+    });
+  }
+};
+
+const addPhotosToListing = async (req = request, res = response) => {
+  //VALIDAR SI EL ANUNCIO PERTENECE AL USUARIO
+  const validateListing = await Listing.find({
+    _id: id_listing,
+    created_by: id_user,
+  });
+
+  if (validateListing.length === 0) {
+    return res.json({
+      msg: "Error al comprobar la pertenencia al usuario del anuncio",
+      // user,
+    });
+  }
+};
+
+const deletePhotosToListing = async (req = request, res = response) => {
+  //VALIDAR SI EL ANUNCIO PERTENECE AL USUARIO
+  const validateListing = await Listing.find({
+    _id: id_listing,
+    created_by: id_user,
+  });
+
+  if (validateListing.length === 0) {
+    return res.json({
+      msg: "Error al comprobar la pertenencia al usuario del anuncio",
+      // user,
+    });
+  }
+  //COMPROBAR SI LAS PHOTOS PERTENECEN AL LISTING
+};
 
 //TODO: DOCUMENTAR TODO EL CÓDIGO, QUITAR TODOS LOS LOGS Y ARREGLAR LOS WARNINGS!
 
