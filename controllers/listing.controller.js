@@ -325,8 +325,7 @@ const updateListing = async (req = request, res = response) => {
 
   if (validateListing.length === 0) {
     res.json({
-      msg: "Error al comprobar la pertenencia al usuario del anuncio",
-      // user,
+      msg: "Error al comprobar la pertenencia del anuncio al usuario",
     });
   }
 
@@ -416,6 +415,8 @@ const updateListing = async (req = request, res = response) => {
 };
 
 const deleteListing = async (req = request, res = response) => {
+  const { id_listing, id_user } = req.query;
+
   //VALIDAR SI EL ANUNCIO PERTENECE AL USUARIO
   const validateListing = await Listing.find({
     _id: id_listing,
@@ -424,23 +425,27 @@ const deleteListing = async (req = request, res = response) => {
 
   if (validateListing.length === 0) {
     res.json({
-      msg: "Error al comprobar la pertenencia al usuario del anuncio",
-      // user,
+      msg: "Error al comprobar la pertenencia del anuncio al usuario",
     });
   }
-  //   const { id } = req.query;
-  //   //BORRADO FISICO DE LA BD
-  //   // const user = await User.findByIdAndDelete(id);
-  //   //BORRADO CAMBIANDO EL STATE DEL USUARIO PARA QUE PERMANEZCA EN LA BD Y NO SE PIERDA LA INTEGRIDAD REFERENCIAL
-  //   const user = await User.findByIdAndUpdate(
-  //     id,
-  //     { state: false },
-  //     { new: true } //mediante new:true se muestran los resultados de los cambios ya producidos.
-  //   );
-  //   res.json({
-  //     msg: "Usuario eliminado con éxito.",
-  //     user,
-  //   });
+
+  const listing = await Listing.findByIdAndUpdate(id_listing, {
+    state: false,
+  }).where({
+    state: true,
+  });
+
+  console.log(listing);
+
+  if (listing === null) {
+    res.json({
+      msg: "El anuncio que se intenta eliminar no existe. Ningún anuncio encontrado.",
+    });
+  }
+
+  res.json({
+    msg: "Anuncio modificado con éxito.",
+  });
 };
 
 //TODO: FALTAN DE AÑADIR ADD_PHOTO, DELETE_PHOTO, ADD_FAVORITE, DELETE_FAVORITE
