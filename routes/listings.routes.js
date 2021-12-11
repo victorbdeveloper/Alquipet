@@ -218,16 +218,58 @@ router.put(
   "/update_listing",
   [
     validateJWT,
-    // check("id", "El id debe de ser un id vádilo de MongoDB").isMongoId(),
-    // check("id").custom(userExistsById),
-    // check("password", "El password debe tener mas de 6 dígitos")
-    //   .optional(true)
-    //   .isLength({
-    //     min: 6,
-    //   }),
-    // check("phone", "El teléfono no es correcto").optional(true).isMobilePhone(),
-
-    //check("role").custom(isRoleValid),
+    check(
+      "id_user",
+      "El id del usuario debe de ser un id vádilo de MongoDB"
+    ).isMongoId(),
+    check("id_user").custom(userExistsById),
+    check(
+      "id_listing",
+      "El id del anuncio debe de ser un id vádilo de MongoDB"
+    ).isMongoId(),
+    check("id_listing").custom(listingExistsById),
+    check("province", "El campo provincia no puede estar vacío").notEmpty(),
+    check("municipality", "El campo municipio no puede estar vacío").notEmpty(),
+    check(
+      "postal_code",
+      "El campo código postal no puede estar vacío"
+    ).notEmpty(),
+    check("street", "El campo calle no puede estar vacío").notEmpty(),
+    check("number", "El campo número no puede estar vacío").notEmpty(),
+    check("flour", "El campo piso no puede estar vacío").notEmpty(),
+    check("letter", "El campo letra no puede estar vacío").notEmpty(),
+    validatePetsAllowed,
+    check(
+      "dogs",
+      "Establecer si se admiten perros debe ser true o false"
+    ).isBoolean(),
+    check(
+      "cats",
+      "Establecer si se admiten gatos debe ser true o false"
+    ).isBoolean(),
+    check(
+      "birds",
+      "Establecer si se admiten pájaros debe ser true o false"
+    ).isBoolean(),
+    check(
+      "rodents",
+      "Establecer si se admiten roedores debe ser true o false"
+    ).isBoolean(),
+    check(
+      "exotic",
+      "Establecer si se admiten mascotas exóticas debe ser true o false"
+    ).isBoolean(),
+    check(
+      "others",
+      "El campo others hay que pasarlo aunque esté vacío"
+    ).isString(),
+    check("price", "El precio del alquiler es obligatorio").notEmpty(),
+    check(
+      "price",
+      "El precio del alquiler tiene que ser un número"
+    ).isNumeric(),
+    check("description", "El campo description hay que pasarlo aunque esté vacío")
+      .isString(),
     validateRequest,
   ],
   updateListing

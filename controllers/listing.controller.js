@@ -18,6 +18,9 @@ const getListingById = async (req = request, res = response) => {
   const { id } = req.query;
   const listing = await Listing.findById(id)
     .populate({
+      path: "created_by",
+    })
+    .populate({
       path: "address",
     })
     .populate({
@@ -73,6 +76,9 @@ const getFilteredMyListingsPaginated = async (
 
     Listing.find(queryListing)
       .where({ created_by: id })
+      .populate({
+        path: "created_by",
+      })
       .populate({
         path: "address",
         match: { addres: { $in: addresses } },
@@ -158,6 +164,9 @@ const getFilteredListingPaginated = async (req = request, res = response) => {
   const [totalListings, listings] = await Promise.all([
     Listing.countDocuments(queryListing),
     Listing.find(queryListing)
+      .populate({
+        path: "created_by",
+      })
       .populate({
         path: "address",
         match: { addres: { $in: addresses } },
@@ -282,33 +291,98 @@ const createListing = async (req = request, res = response) => {
 };
 
 const updateListing = async (req = request, res = response) => {
-  //   const { id } = req.query;
-  //   const { password, phone, ...rest } = req.body;
-  //   //comprueba si se le ha pasado el password o no
-  //   if (password) {
-  //     //encriptar la contraseña
-  //     const salt = bcryptjs.genSaltSync();
-  //     rest.password = bcryptjs.hashSync(password, salt);
-  //   }
-  //   //comprueba si se le ha pasado el phone o no
-  //   if (phone) {
-  //     rest.phone = phone;
-  //   }
-  //   //comprueba si no se le ha pasado ningún dato a la petición
-  //   if (!password || !phone) {
-  //     res.json({
-  //       msg: "No se ha facilitado ningún dato.",
-  //     });
-  //   }
-  //   const user = await User.findByIdAndUpdate(
-  //     id,
-  //     { password: rest.password, phone: rest.phone },
-  //     { new: true } //con new:true se muestran los resultados de los cambios ya producidos
-  //   );
-  //   res.json({
-  //     msg: "Usuario modificado con éxito.",
-  //     user,
-  //   });
+  const { id_listing, id_user } = req.query;
+
+  //VALIDAR SI EL ANUNCIO PERTENECE AL USUARIO
+  const validateListing = await Listing.find({
+    // $and: [{ _id: id_listing }, { created_by: createListing }],
+    _id: id_listing,
+    created_by: id_user,
+  });
+
+  if (validateListing.length === 0) {
+    res.json({
+      msg: "Error al comprobar la pertenencia al usuario del anuncio",
+      // user,
+    });
+  }
+
+  //CREAR OBJETO ADDRESS CON LOS NUEVOS VALORES Y CAMBIAR TABLA ADDRESSES
+  const { province, municipality, postal_code, street, number, flour, letter } =
+    req.body;
+  const address = {
+    province,
+    municipality,
+    postal_code,
+    street,
+    number,
+    flour,
+    letter,
+    latitude: "",
+    longitude: "",
+  };
+
+  //SE VUELVEN A GENERAR LAS COORDENADAS PARA LA NUEVA DIRECCIÓN
+  // se obtienen la latitud y la longitud en base a la dirección pasada en la request utilizando el servicio de MapBox
+  try {
+    const latLong = await generateLatLong(address);
+
+    if (latLong != undefined) {
+      address.latitude = latLong[0].lat;
+      address.longitude = latLong[0].long;
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      msg: "Ha ocurrido un error en el servidor.",
+    });
+  }
+
+  const addressQuery = await Address.findByIdAndUpdate(
+    validateListing[0].address._id,
+    address,
+    { new: true }
+  );
+
+  //CREAR OBJETO PETS_ALLOWED CON LOS NUEVOS VALORES Y CAMBIAR TABLA PETS_ALLOWED
+  const { dogs, cats, birds, rodents, exotic, others } = req.body;
+  const pets = {
+    dogs,
+    cats,
+    birds,
+    rodents,
+    exotic,
+    others,
+  };
+  const petsQuery = await PetsAllowed.findByIdAndUpdate(
+    validateListing[0].pets_allowed._id,
+    pets,
+    { new: true }
+  );
+
+  //MODIFICAR LOS VALORES DEL LISTING CON LOS OBJETOS CREADOS ANTERIORMENTE Y LOS DATOS QUE LLEGAN EN EL BODY
+  const { price, description } = req.body;
+
+  const listing = await Listing.findByIdAndUpdate(
+    id_listing,
+    { price: price, description: description },
+    { new: true } //con new:true se muestran los resultados de los cambios ya producidos
+  )
+    .populate({
+      path: "created_by",
+    })
+    .populate({
+      path: "address",
+    })
+    .populate({
+      path: "pets_allowed",
+    })
+    .populate("photos");
+
+  res.json({
+    msg: "Anuncio modificado con éxito.",
+    listing,
+  });
 };
 
 const deleteListing = async (req = request, res = response) => {
