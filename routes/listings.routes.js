@@ -11,9 +11,6 @@ const {
 const {
   userExistsById,
   listingExistsById,
-  listingCreatedByCurrentUser,
-  listingAlredysFavorite,
-  photoInListingCreatedByCurrentUser,
 } = require("../helpers/index.helper");
 
 const {
@@ -235,7 +232,6 @@ router.put(
       "El id del anuncio debe de ser un id vádilo de MongoDB"
     ).isMongoId(),
     check("id_listing").custom(listingExistsById),
-    check("id_listing", "id_user").custom(listingCreatedByCurrentUser),
     check("province", "El campo provincia no puede estar vacío").notEmpty(),
     check("municipality", "El campo municipio no puede estar vacío").notEmpty(),
     check(
@@ -300,7 +296,6 @@ router.delete(
       "El id del anuncio debe de ser un id vádilo de MongoDB"
     ).isMongoId(),
     check("id_listing").custom(listingExistsById),
-    check("id_listing", "id_user").custom(listingCreatedByCurrentUser),
     validateRequest,
   ],
   deleteListing
@@ -381,7 +376,6 @@ router.put(
       "El id del anuncio debe de ser un id vádilo de MongoDB"
     ).isMongoId(),
     check("id_listing").custom(listingExistsById),
-    check("id_listing", "id_user").custom(listingAlredysFavorite),
     validateRequest,
   ],
   addListingToUserFavoritesListings
@@ -419,7 +413,6 @@ router.put(
       "El id del anuncio debe de ser un id vádilo de MongoDB"
     ).isMongoId(),
     check("id_listing").custom(listingExistsById),
-    check("id_listing", "id_user").custom(listingCreatedByCurrentUser),
     validateFiles,
     validateRequest,
   ],
@@ -438,9 +431,6 @@ router.delete(
       "El id del anuncio debe de ser un id vádilo de MongoDB"
     ).isMongoId(),
     check("id_listing").custom(listingExistsById),
-    check("id_listing", "id_user").custom(listingCreatedByCurrentUser),
-    //TODO: COMPROBAR ESTE MIDDLEWARE!!
-    check("id_listing", "photos").custom(photoInListingCreatedByCurrentUser),
 
     validateRequest,
   ],

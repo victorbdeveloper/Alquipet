@@ -36,7 +36,7 @@ const getListingById = async (req = request, res = response) => {
     });
   }
 
-  res.json({
+  return res.json({
     msg: "Anuncio encontrado con éxito en la Base de Datos.",
     listing,
   });
@@ -113,12 +113,12 @@ const getFilteredMyListingsPaginated = async (
   ]);
 
   if (listings === null) {
-    res.json({
+    return res.json({
       msg: "Sin resultados de la Base de Datos. Ningún anuncio encontrado.",
     });
   }
 
-  res.json({
+  return res.json({
     "Total anuncios encontrados aplicando los filtros:":
       listings.length > 0 ? totalListings : 0,
     "Anuncios mostrados: ": listings.length > 0 ? listings.length : 0,
@@ -208,12 +208,12 @@ const getFilteredListingPaginated = async (req = request, res = response) => {
   ]);
 
   if (listings === null) {
-    res.json({
+    return res.json({
       msg: "Sin resultados de la Base de Datos. Ningún anuncio encontrado.",
     });
   }
 
-  res.json({
+  return res.json({
     "Total anuncios encontrados aplicando los filtros:":
       listings.length > 0 ? totalListings : 0,
     "Anuncios mostrados: ": listings.length > 0 ? listings.length : 0,
@@ -262,7 +262,7 @@ const createListing = async (req = request, res = response) => {
     }
   } catch (error) {
     console.log(error);
-    res.status(500).json({
+    return res.status(500).json({
       msg: "Ha ocurrido un error en el servidor.",
     });
   }
@@ -282,7 +282,7 @@ const createListing = async (req = request, res = response) => {
       }
     } catch (error) {
       console.log(error);
-      res.status(500).json({
+      return res.status(500).json({
         msg: "Ha ocurrido un error en el servidor cuando se ha intentado subir las fotos a Cloudinary.",
       });
     }
@@ -310,18 +310,32 @@ const createListing = async (req = request, res = response) => {
   }
 
   //RESPUESTA
-  res.json({
+  return res.json({
     msg: "Anuncio creado con éxito",
     listing,
   });
 };
 
 const updateListing = async (req = request, res = response) => {
-  const { id_listing } = req.query;
+  const { id_listing, id_user } = req.query;
+
+  //VALIDAR SI EL ANUNCIO PERTENECE AL USUARIO
+  const validateListing = await Listing.find({
+    _id: id_listing,
+    created_by: id_user,
+  });
+
+  if (validateListing.length === 0) {
+    return res.json({
+      msg: "Error al verificar la pertenencia del anuncio al usuario",
+      // user,
+    });
+  }
 
   //CREAR OBJETO ADDRESS CON LOS NUEVOS VALORES Y CAMBIAR TABLA ADDRESSES
   const { province, municipality, postal_code, street, number, flour, letter } =
     req.body;
+
   const address = {
     province,
     municipality,
@@ -345,7 +359,7 @@ const updateListing = async (req = request, res = response) => {
     }
   } catch (error) {
     console.log(error);
-    res.status(500).json({
+    return res.status(500).json({
       msg: "Ha ocurrido un error en el servidor.",
     });
   }
@@ -390,20 +404,35 @@ const updateListing = async (req = request, res = response) => {
     })
     .populate("photos");
 
+  console.log(listing);
+
   if (listing === null) {
-    res.json({
+    return res.json({
       msg: "Sin resultados de la Base de Datos. Ningún anuncio encontrado.",
     });
   }
 
-  res.json({
+  return res.json({
     msg: "Anuncio modificado con éxito.",
     listing,
   });
 };
 
 const deleteListing = async (req = request, res = response) => {
-  const { id_listing } = req.query;
+  const { id_listing, id_user } = req.query;
+
+  //VALIDAR SI EL ANUNCIO PERTENECE AL USUARIO
+  const validateListing = await Listing.find({
+    _id: id_listing,
+    created_by: id_user,
+  });
+
+  if (validateListing.length === 0) {
+    return res.json({
+      msg: "Error al verificar la pertenencia del anuncio al usuario",
+      // user,
+    });
+  }
 
   const listing = await Listing.findByIdAndUpdate(id_listing, {
     state: false,
@@ -412,13 +441,14 @@ const deleteListing = async (req = request, res = response) => {
   });
 
   if (listing === null) {
-    res.json({
+    return res.json({
       msg: "El anuncio que se intenta eliminar no existe. Ningún anuncio encontrado.",
     });
   }
 
-  res.json({
-    msg: "Anuncio modificado con éxito.",
+  return res.json({
+    msg: "Anuncio eliminado con éxito.",
+    listing,
   });
 };
 
@@ -434,24 +464,57 @@ const addListingToUserFavoritesListings = async (
 ) => {
   const { id_listing, id_user } = req.query;
 
+  //VERIFICAR SI UN ANUNCIO QUE QUIERE AÑADIRSE A FAVORITOS YA ESTA AÑADIDO A LOS FAVORITOS DEL USUARIO
+  const validateListing = await User.find({
+    $and: [{ id: id_user }, { favorite_listings: id_listing }],
+  });
+
+  if (validateListing.length > 0) {
+    return res.json({
+      msg: `El anuncio con id ${id_listing} ya esta añadido a la lista de favoritos del usuario`,
+    });
+  }
+
   const user = await User.findByIdAndUpdate(
     id_user,
     {
       $push: { favorite_listings: id_listing },
     },
     { new: true }
-  ).where({
-    state: true,
-  });
+  )
+    .where({
+      state: true,
+    })
+    .populate({
+      path: "favorite_listings",
+      populate: {
+        path: "address",
+        model: "Address",
+      },
+    })
+    .populate({
+      path: "favorite_listings",
+      populate: {
+        path: "pets_allowed",
+        model: "Pets_allowed",
+      },
+    })
+    .populate({
+      path: "favorite_listings",
+      populate: {
+        path: "photos",
+        model: "Photo",
+      },
+    });
 
   if (user === null) {
-    res.json({
+    return res.json({
       msg: "Sin resultados de la Base de Datos. Ningún anuncio encontrado.",
     });
   }
 
-  res.json({
-    msg: "Anuncio modificado con éxito.",
+  return res.json({
+    msg: "Anuncio añadido a favoritos con éxito.",
     user,
   });
 };
@@ -459,9 +522,51 @@ const addListingToUserFavoritesListings = async (
 const deleteListingToUserFavoritesListings = async (
   req = request,
   res = response
-) => {};
-const addPhotosToListing = async (req = request, res = response) => {};
-const deletePhotosToListing = async (req = request, res = response) => {};
+) => {
+  //VALIDAR SI EL ANUNCIO PERTENECE AL USUARIO
+  const validateListing = await Listing.find({
+    _id: id_listing,
+    created_by: id_user,
+  });
+
+  if (validateListing.length === 0) {
+    return res.json({
+      msg: "Error al comprobar la pertenencia al usuario del anuncio",
+      // user,
+    });
+  }
+};
+
+const addPhotosToListing = async (req = request, res = response) => {
+  //VALIDAR SI EL ANUNCIO PERTENECE AL USUARIO
+  const validateListing = await Listing.find({
+    _id: id_listing,
+    created_by: id_user,
+  });
+
+  if (validateListing.length === 0) {
+    return res.json({
+      msg: "Error al comprobar la pertenencia al usuario del anuncio",
+      // user,
+    });
+  }
+};
+
+const deletePhotosToListing = async (req = request, res = response) => {
+  //VALIDAR SI EL ANUNCIO PERTENECE AL USUARIO
+  const validateListing = await Listing.find({
+    _id: id_listing,
+    created_by: id_user,
+  });
+
+  if (validateListing.length === 0) {
+    return res.json({
+      msg: "Error al comprobar la pertenencia al usuario del anuncio",
+      // user,
+    });
+  }
+  //COMPROBAR SI LAS PHOTOS PERTENECEN AL LISTING
+};
 
 //TODO: DOCUMENTAR TODO EL CÓDIGO, QUITAR TODOS LOS LOGS Y ARREGLAR LOS WARNINGS!
 
