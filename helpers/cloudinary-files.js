@@ -17,7 +17,7 @@ async function uploadFiles(uid = "", photos = []) {
   let photosResponse = [];
   let photosArray = [];
 
-  //SE COMPRUEBA SI SE HA PASADO MAS DE 1 IMÁGEN, SI NO, SE GUARDA EN UN ARRAY (si viene mas de 1 imágen ya viene como array)
+  //SE COMPRUEBA SI SE HA PASADO MAS DE 1 IMAGEN, SI NO, SE GUARDA EN UN ARRAY (si viene mas de 1 imagen ya viene como array)
   if (Array.isArray(photos)) {
     photosArray = photos;
   } else {
@@ -26,7 +26,7 @@ async function uploadFiles(uid = "", photos = []) {
 
   try {
     for (const photoIndex of photosArray) {
-      //SUBE LA IMÁGEN A CLOUDINARY Y LA GUARDA EN LA CARPETA QUE TIENE DE NOMBRE EL UID PASADO POR PARÁMETROS
+      //SUBE LA IMAGEN A CLOUDINARY Y LA GUARDA EN LA CARPETA QUE TIENE DE NOMBRE EL UID PASADO POR PARÁMETROS
       const resp = await cloudinary.uploader.upload(photoIndex.tempFilePath, {
         folder: `Alquipet/${uid}`,
       });
@@ -56,7 +56,7 @@ async function uploadFiles(uid = "", photos = []) {
 async function deleteFiles(photos = []) {
   try {
     for (const photo of photos) {
-      //BUSCA LAS IMÁGENES EN CLOUDINARY MEDIANTE EL VALOR DE "public_id_cloudinary" DE CADA IMÁGEN Y LAS ELIMINA
+      //BUSCA LAS IMÁGENES EN CLOUDINARY MEDIANTE EL VALOR DE "public_id_cloudinary" DE CADA IMAGEN Y LAS ELIMINA
       await cloudinary.uploader.destroy(photo.public_id_cloudinary);
     }
   } catch (error) {

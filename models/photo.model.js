@@ -15,7 +15,7 @@ const PhotoSchema = Schema({
     type: String,
     required: [
       true,
-      "La url de cloudinary donde esta guardada la imágen es obligatorio",
+      "La url de cloudinary donde esta guardada la imagen es obligatorio",
     ],
   },
 });

@@ -828,7 +828,7 @@ const addPhotosToListing = async (req = request, res = response) => {
   }
 
   //*PHOTOS
-  //SE COMPRUEBA SI NO SE HA MANDADO NINGUNA IMÁGEN QUE AÑADIR AL ANUNCIO
+  //SE COMPRUEBA SI NO SE HA MANDADO NINGUNA IMAGEN QUE AÑADIR AL ANUNCIO
   if (req.files !== null && req.files !== undefined) {
     try {
       //LLAMA A LA FUNCIÓN DE LOS HELPERS ENCARGADA DE SUBIR LAS IMÁGENES A CLOUDINARY
@@ -841,7 +841,7 @@ const addPhotosToListing = async (req = request, res = response) => {
     }
   } else {
     return res.status(400).json({
-      msg: "No se ha incluido ninguna imágen para añadirla al anuncio.",
+      msg: "No se ha incluido ninguna imagen para añadirla al anuncio.",
     });
   }
 
@@ -898,7 +898,7 @@ const deletePhotosToListing = async (req = request, res = response) => {
   //VALIDA QUE SE ADJUNTEN PHOTOS A LA PETICION
   if (photosRequest[0] === null || photosRequest[0] === undefined) {
     return res.status(400).json({
-      msg: "No se ha incluido ninguna imágen para añadirla al anuncio.",
+      msg: "No se ha incluido ninguna imagen para añadirla al anuncio.",
     });
   }
 
@@ -925,7 +925,7 @@ const deletePhotosToListing = async (req = request, res = response) => {
   for (const photoId of photosRequest) {
     if (!validatePhotosInListing.photos.includes(photoId)) {
       return res.status(400).json({
-        msg: `La imágen con id ${photoId} no pertenece al anuncio del que se quiere eliminar. Todas las fotos mandadas tienen que pertenecer al anuncio del que se quieren borrar.`,
+        msg: `La imagen con id ${photoId} no pertenece al anuncio del que se quiere eliminar. Todas las fotos mandadas tienen que pertenecer al anuncio del que se quieren borrar.`,
       });
     }
 
