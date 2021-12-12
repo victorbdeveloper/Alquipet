@@ -1,9 +1,15 @@
+//IMPORTS PROYECTO
 const Address = require("../models/address.model");
 
-//FUNCIÓN QUE FILTRA LOS ANUNCIOS POR LA DIRECCIÓN
+/*
+ * Función que recibe la provincia.
+ * Filtra los anuncios por la provincia.
+ */
 async function getAddressListingFiltered(province = "") {
-  const regex = new RegExp(province, "i"); //expresión regular para no tener en cuenta las mayus y minus
+  const regex = new RegExp(province, "i"); //expresión regular para no tener en cuenta las mayúsculas y minúsculas
 
+  //BUSCA EN LA BASE DE DATOS TODAS LAS ENTRADAS DE LA COLECCIÓN ADDRESSES EN LAS QUE LA PROVINCIA SEA LA MISMA QUE LA
+  //PASADA POR PARÁMETROS Y LAS DEVUELVE EN UN ARRAY
   let [addresses] = await Promise.all([
     Address.find(
       {
@@ -16,6 +22,7 @@ async function getAddressListingFiltered(province = "") {
   return [addresses];
 }
 
+//EXPORTS
 module.exports = {
   getAddressListingFiltered,
 };

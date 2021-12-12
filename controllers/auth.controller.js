@@ -1,38 +1,45 @@
+//IMPORTS NODE
 const { request, response, json } = require("express");
 const bcryptjs = require("bcryptjs");
 
+//IMPORTS PROYECTO
 const User = require("../models/user.model");
 const { generateJWT, googleVerify } = require("../helpers/index.helper");
 
+/*
+ * Función anónima asíncrona que recibe por parámetros la request y la response.
+ * Permite realizar el login utilizando un email y una contraseña.
+ */
 const loginEmail = async (req = request, res = response) => {
   const { email, password } = req.body;
 
   try {
-    //VERIFICAR SI EL EMAIL EXISTE
+    //VERIFICA SI EL EMAIL EXISTE
     const user = await User.findOne({ email });
+
     if (!user) {
       return res.status(400).json({
         msg: "Email / password incorrectos -->(email)", //borrar luego la ultima parte para no dar pistas del error
       });
     }
 
-    //VERIFICAR SI EL USUARIO ESTA ACTIVO
+    //VERIFICA SI EL USUARIO ESTA ACTIVO
     if (!user.state) {
-      console.log(user);
       return res.status(400).json({
         msg: "Email / password incorrectos -->(state: false)", //borrar luego la ultima parte para no dar pistas del error
       });
     }
 
-    //VERIFICAR LA CONTRASEÑA
+    //VERIFICA LA CONTRASEÑA
     const isValidPassword = bcryptjs.compareSync(password, user.password);
+
     if (!isValidPassword) {
       return res.status(400).json({
         msg: "Email / password incorrectos -->(password)", //borrar luego la ultima parte para no dar pistas del error
       });
     }
 
-    //GENERAR EL JWT
+    //GENERA EL JWT
     const token = await generateJWT(user.id);
 
     //RESPUESTA
@@ -43,28 +50,27 @@ const loginEmail = async (req = request, res = response) => {
     });
   } catch (error) {
     console.log(error);
+
     res.status(500).json({
       msg: "Algo salió mal. Hable con el administrador del sistema.",
     });
   }
 };
 
+/*
+ * Función anónima asíncrona que recibe por parámetros la request y la response.
+ * Permite realizar el login utilizando un email y una contraseña de una cuenta de Google.
+ */
 const loginGoogleSignIn = async (req = request, res = response) => {
   const { id_token } = req.body;
 
-  //TODO: COMPROBAR ESTOS LOGS Y PONER LOS PASOS A SEGUIR PARA OBTENER EL TOKEN QUE HAY QUE PEGAR EN POSTMAN PARA LOGEAR CON GOOGLE
-  //console.log(id_token);
-
   try {
-    // const googleUser = await googleVerify(id_token);
-    // console.log(googleUser);
-
     const { given_name, family_name, email } = await googleVerify(id_token);
 
-    //BUSCAMOS EL EMAIL EN LA BD E IGUALAMOS EL RESULTADO DE LA BÚSQUEDA A LA VARIABLE USER
+    //SE BUSCA EL EMAIL EN LA BD Y SE IGUALA EL RESULTADO DE LA BÚSQUEDA A LA VARIABLE USER
     let user = await User.findOne({ email });
 
-    //SI EL USUARIO NO EXISTE EN LA BD, LO CREAMOS
+    //SI EL USUARIO NO EXISTE EN LA BD, SE CREA UNO NUEVO CON LOS DATOS OBTENIDOS DEL TOKEN DE GOOGLE
     if (!user) {
       const data = {
         user_name: email.split("@")[0],
@@ -105,6 +111,7 @@ const loginGoogleSignIn = async (req = request, res = response) => {
   }
 };
 
+//EXPORTS
 module.exports = {
   loginEmail,
   loginGoogleSignIn,

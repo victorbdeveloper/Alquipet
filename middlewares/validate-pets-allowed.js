@@ -1,8 +1,14 @@
+//IMPORTS NODE
 const { request, response } = require("express");
 
+/*
+ * Función anónima que recibe una request y una response.
+ * Valida las mascotas enviadas en la petición.
+ */
 const validatePetsAllowed = async (req = request, res = response, next) => {
   const { dogs, cats, birds, rodents, exotic, ...rest } = req.body;
 
+  //VALIDA SI NO SE SELECCIONÓ NINGUNA MASCOTA
   if (
     dogs === undefined &&
     cats === undefined &&
@@ -15,9 +21,10 @@ const validatePetsAllowed = async (req = request, res = response, next) => {
     });
   }
 
-  next(); // es para continuar
+  next();
 };
 
+//EXPORTS
 module.exports = {
   validatePetsAllowed,
 };

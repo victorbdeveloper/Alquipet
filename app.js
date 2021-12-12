@@ -1,8 +1,10 @@
+//IMPORTS NODE
 require("dotenv").config();
 
-//* parte del restServer... peticiones desde el Front
+//IMPORTS PROYECTO
 const Server = require("./models/server.model");
 
+//FUNCIÓN DE ENTRADA AL PROYECTO
 const main = async () => {
   //*PARTE DEL RESTSERVER CON EXPRESS
   const server = new Server();

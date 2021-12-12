@@ -1,30 +1,41 @@
+//IMPORTS NODE
 const { request, response } = require("express");
 const bcryptjs = require("bcryptjs");
 
+//IMPORTS PROYECTO
 const User = require("../models/user.model");
 
+/*
+ * Función anónima que recibe la request y la response.
+ * Obtiene el usuario buscandolo por su ID.
+ */
 const getUser = async (req = request, res = response) => {
   const { id } = req.query;
 
+  //BUSCA AL USUARIO EN LA BD MEDIANTE SU ID
   const user = await User.findById(id);
 
+  //RESPUESTA
   res.json({
     msg: "Usuario encontrado con éxito en la Base de Datos.",
     user,
   });
 };
 
+/*
+ * Función anónima que recibe la request y la response.
+ * Crea un usuario y lo guarda en la BD.
+ */
 const createUser = async (req = request, res = response) => {
-  //se ha utilizado el operador rest para no tener en cuenta la información que viene en los campos previos y que al generar un usuario
-  //en la bd no se almacenen posibles datos añadidos a esos campos por error o con intenciones fraudulentas
   const { google, state, photo, favorite_listings, ...rest } = req.body;
+
   const user = new User(rest);
 
-  //ENCRIPTAR LA PASSWORD(HACER HASH)
+  //ENCRIPTA LA PASSWORD(HACER HASH)
   const salt = bcryptjs.genSaltSync();
   user.password = bcryptjs.hashSync(user.password, salt);
 
-  //GUARDAR EL USUARIO EN LA BASE DE DATOS
+  //GUARDA EL USUARIO EN LA BASE DE DATOS
   await user.save();
 
   //RESPUESTA
@@ -34,29 +45,34 @@ const createUser = async (req = request, res = response) => {
   });
 };
 
+/*
+ * Función anónima que recibe la request y la response.
+ * Modifica un usuario y lo guarda en la BD.
+ */
 const updateUser = async (req = request, res = response) => {
   const { id } = req.query;
   const { password, phone, ...rest } = req.body;
 
-  //comprueba si se le ha pasado el password o no
+  //SE VALIDA SI SE HA ENVIADO LA CONTRASEÑA PARA MODIFICARLA
   if (password) {
-    //encriptar la contraseña
+    //ENCRIPTA LA CONTRASEÑA
     const salt = bcryptjs.genSaltSync();
     rest.password = bcryptjs.hashSync(password, salt);
   }
 
-  //comprueba si se le ha pasado el phone o no
+  //SE VALIDA SI SE HA ENVIADO EL TELEFONO PARA MODIFICARLO
   if (phone) {
     rest.phone = phone;
   }
 
-  //comprueba si no se le ha pasado ningún dato a la petición
+  //SI NO SE HA ENVIADO NINGÚN DATO QUE MODIFCAR
   if (!password && !phone) {
     res.json({
       msg: "No se ha facilitado ningún dato.",
     });
   }
 
+  //BUSCA AL USUARIO EN LA BD POR SU ID Y LO MODIFICA
   const user = await User.findByIdAndUpdate(
     id,
     { password: rest.password, phone: rest.phone },
@@ -69,25 +85,32 @@ const updateUser = async (req = request, res = response) => {
   });
 };
 
+/*
+ * Función anónima que recibe la request y la response.
+ * Elimina un usuario de la BD.
+ */
 const deleteUser = async (req = request, res = response) => {
   const { id } = req.query;
 
-  //BORRADO FISICO DE LA BD
-  // const user = await User.findByIdAndDelete(id);
+  //*BORRADO FISICO DE LA BD --> se ha decidido utilizar el otro sistema de "borrado"
+  //const user = await User.findByIdAndDelete(id);
 
-  //BORRADO CAMBIANDO EL STATE DEL USUARIO PARA QUE PERMANEZCA EN LA BD Y NO SE PIERDA LA INTEGRIDAD REFERENCIAL
+  //*BORRADO CAMBIANDO EL STATE DEL USUARIO A FALSE PARA QUE PERMANEZCA EN LA BD Y NO SE PIERDA LA INTEGRIDAD REFERENCIAL
+  //SE BUSCA AL USUARIO EN LA BD POR SU ID Y SE LE CAMBIA EL ESTADO A FALSO
   const user = await User.findByIdAndUpdate(
     id,
     { state: false },
     { new: true } //mediante new:true se muestran los resultados de los cambios ya producidos.
   );
 
+  //RESPUESTA
   res.json({
     msg: "Usuario eliminado con éxito.",
     user,
   });
 };
 
+//EXPORTS
 module.exports = {
   createUser,
   getUser,
