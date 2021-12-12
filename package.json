@@ -23,14 +23,12 @@
     "express-validator": "^6.13.0",
     "google-auth-library": "^7.10.3",
     "jsonwebtoken": "^8.5.1",
-    "mongoose": "^6.0.12",
-    "swagger-ui-express": "^4.2.0",
+    "mongoose": "^6.1.0",
     "uuid": "^8.3.2",
     "yargs": "^17.3.0"
   },
   "devDependencies": {
-    "nodemon": "^2.0.15",
-    "swagger-autogen": "^2.14.0"
+    "nodemon": "^2.0.15"
   },
   "repository": {
     "type": "git",

@@ -1,14 +1,5 @@
 const User = require("../models/user.model");
-
-//  const { Address, Listing, Pets_allowed, Photo, User } = require('../models');
-
-//VERIFICAR SI EL ROL ES VALIDO
-// const isRoleValid = async (role = "") => {
-//   const roleExist = await Role.findOne({ role });
-//   if (!roleExist) {
-//     throw new Error(`El rol ${role} no esta registrado en la BD`);
-//   }
-// };
+const Listing = require("../models/listing.model");
 
 //VERIFICAR SI EL USER_NAME EXISTE
 const isUserNameValid = async (user_name = "") => {
@@ -30,7 +21,15 @@ const isEmailValid = async (email = "") => {
 const userExistsById = async (id = "") => {
   const userExists = await User.findById({ _id: id });
   if (!userExists) {
-    throw new Error(`El id ${id} no existe`);
+    throw new Error(`El usuario con id ${id} no existe`);
+  }
+};
+
+//VERIFICAR SI EXISTE EL ANUNCIO BUSCANDO POR SU ID DE MONGO EN LA BD
+const listingExistsById = async (id = "") => {
+  const listingExists = await Listing.findById({ _id: id });
+  if (!listingExists) {
+    throw new Error(`El anuncio con id ${id} no existe`);
   }
 };
 
@@ -38,4 +37,5 @@ module.exports = {
   isUserNameValid,
   isEmailValid,
   userExistsById,
+  listingExistsById,
 };

@@ -5,7 +5,7 @@ const AddressSchema = Schema({
     type: String,
     required: [true, "La provincia es obligatoria"],
   },
-  Municipality: {
+  municipality: {
     type: String,
     required: [true, "El municipio es obligatorio"],
   },
@@ -31,19 +31,16 @@ const AddressSchema = Schema({
   },
   latitude: {
     type: String,
-    required: [true, "La latitud es obligatoria"],
   },
   longitude: {
     type: String,
-    required: [true, "La longitud es obligatoria"],
   },
 });
 
-//TODO: CAMBIARA POR LOS DATOS DEL ADDRESS
 AddressSchema.methods.toJSON = function () {
-  // const { __v, _id, password, ...user } = this.toObject();
-  // user.uid = _id;
-  // return user;
+  const { __v, _id, ...address } = this.toObject();
+  address.uid = _id;
+  return address;
 };
 
 module.exports = model("Address", AddressSchema);

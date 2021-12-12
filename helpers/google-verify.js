@@ -9,17 +9,18 @@ async function googleVerify(token = "") {
     // Or, if multiple clients access the backend:
     //[CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]
   });
-  // const payload = ticket.getPayload(); //AQUI TENDRIAMOS TODA LA INFORMACION DEL TOKEN EN LA CONSTANTE PAYLOAD
-  const { name, picture, email } = ticket.getPayload(); //DESESTRUCTURAMOS LA INFORMACION PARA SOLO UTILIZAR LO QUE QUERAMOS
+
+  const payload = ticket.getPayload(); //AQUI TENDRIAMOS TODA LA INFORMACION DEL TOKEN EN LA CONSTANTE PAYLOAD
+  // console.log(payload);
+  const { given_name, family_name, email } = ticket.getPayload(); //DESESTRUCTURAMOS LA INFORMACION PARA SOLO UTILIZAR LO QUE QUERAMOS
 
   //const userid = payload["sub"];
   // If request specified a G Suite domain:
   // const domain = payload['hd'];
 
-  // console.log(payload);
   return {
-    name,
-    picture,
+    given_name,
+    family_name,
     email,
   };
 }

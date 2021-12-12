@@ -1,59 +1,56 @@
 const { Router } = require("express");
 const { check } = require("express-validator");
 
-
-
 const {
   validateJWT,
   validateRequest,
 } = require("../middlewares/index.middlewares");
 
 const {
-  // isRoleValid,
   isUserNameValid,
   isEmailValid,
   userExistsById,
-} = require("../helpers/db-validators");
+} = require("../helpers/index.helper");
 
 const {
-  testGet,
   createUser,
-  testPut,
-  testDelete,
+  getUser,
+  deleteUser,
+  updateUser,
 } = require("../controllers/user.controller");
 
 const router = Router();
 
-//devolución de un text/html (no es común devolver un texto directamente, es mejor devolver un JSON)
-router.get("/holamundo", (req, res) => {
-  res.send("Hello World desde /api/users/holamundo");
-});
-
 //PETICIÓN GET
-router.get("/", testGet);
+router.get(
+  "/get_user",
+  [
+    validateJWT,
+    check("id", "El id debe de ser un id vádilo de MongoDB").isMongoId(),
+    check("id").custom(userExistsById),
+    validateRequest,
+  ],
+  getUser
+);
 
 //PETICIÓN POST
 router.post(
-  /* 
-    #swagger.tags = ['User']
-    #swagger.path = ['/users/create_user', ]
-    #swagger.description = 'Endpoint para crear un usuario.'
-
-  */
   "/create_user",
   [
-    check("user_name", "El nombre de usuario es obligatorio").not().isEmpty(),
+    check("user_name", "El nombre de usuario es obligatorio").notEmpty(),
     check("user_name").custom(isUserNameValid),
-    check("name", "El nombre es obligatorio").not().isEmpty(),
-    check("last_name", "El apellido es obligatorio").not().isEmpty(),
+    check("name", "El nombre es obligatorio").notEmpty(),
+    check("last_name", "El apellido es obligatorio").notEmpty(),
+    check("email", "El email es obligatorio").notEmpty(),
     check("email", "El email no es correcto").isEmail(),
     check("email").custom(isEmailValid),
+    check("password", "El password es obligatorio").notEmpty(),
     check("password", "El password debe tener mas de 6 dígitos").isLength({
       min: 6,
     }),
-    check("phone", "El teléfono no es correcto").isMobilePhone(),
-    // check("role", "No es un rol válido").isIn(["ADMIN_ROLE", "USER_ROLE"]),
-    //check("role").custom(isRoleValid),
+    check("phone", "El teléfono no tiene un formato válido")
+      .optional(true)
+      .isMobilePhone(),
     validateRequest,
   ],
   createUser
@@ -61,26 +58,32 @@ router.post(
 
 //PETICIÓN PUT
 router.put(
-  "/:id",
+  "/update_user",
   [
-    check("id", `El id no es un id valido de mongo`).isMongoId(),
+    validateJWT,
+    check("id", "El id debe de ser un id vádilo de MongoDB").isMongoId(),
     check("id").custom(userExistsById),
-    //check("role").custom(isRoleValid),
+    check("password", "El password debe tener mas de 6 dígitos")
+      .optional(true)
+      .isLength({
+        min: 6,
+      }),
+    check("phone", "El teléfono no es correcto").optional(true).isMobilePhone(),
     validateRequest,
   ],
-  testPut
+  updateUser
 );
 
 //PETICIÓN DELETE
 router.delete(
-  "/:id",
+  "/delete_user",
   [
     validateJWT,
-    check("id", `El id no es un id valido de mongo`).isMongoId(),
+    check("id", "El id debe de ser un id vádilo de MongoDB").isMongoId(),
     check("id").custom(userExistsById),
     validateRequest,
   ],
-  testDelete
+  deleteUser
 );
 
 module.exports = router;

@@ -1,7 +1,11 @@
-const  validateJWT  = require("./validate-jwt");
-const  validateRequest  = require("./validate-request");
+const validateJWT = require("./validate-jwt");
+const validatePetsAllowed = require("./validate-pets-allowed");
+const validateFiles = require("./validate-files");
+const validateRequest = require("./validate-request");
 
 module.exports = {
-    ...validateJWT,
-    ...validateRequest,
-}
+  ...validateJWT,
+  ...validatePetsAllowed,
+  ...validateFiles,
+  ...validateRequest,
+};

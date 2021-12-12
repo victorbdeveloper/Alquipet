@@ -25,7 +25,6 @@ const UserSchema = Schema({
   },
   phone: {
     type: String,
-    required: [true, "El teléfono es obligatorio"],
   },
   google: {
     type: Boolean,
@@ -41,23 +40,21 @@ const UserSchema = Schema({
   },
   favorite_listings: [
     {
-      id: {
-        type: Schema.Types.ObjectId,
-        ref: "Listing",
-      },
+      type: Schema.Types.ObjectId,
+      ref: "Listing",
     },
   ],
-  published_listings: [
-    {
-      id: {
-        type: Schema.Types.ObjectId,
-        ref: "Listing",
-      },
-    },
-  ],
+  //TODO: ELIMINAR AL ACABAR SI NO HA DADO PROBLEMAS!!!
+  // favorite_listings: [
+  //   {
+  //     id: {
+  //       type: Schema.Types.ObjectId,
+  //       ref: "Listing",
+  //     },
+  //   },
+  // ],
 });
 
-//TODO: VERIFICAR ESTOS DATOS YA QUE EL USUARIO NO ES EXACTAMENTE IGUAL
 UserSchema.methods.toJSON = function () {
   const { __v, _id, password, ...user } = this.toObject();
   user.uid = _id;
