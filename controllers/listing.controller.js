@@ -1,6 +1,7 @@
+//IMPORTS NODE
 const { request, response } = require("express");
-const { Mongoose } = require("mongoose");
 
+//IMPORTS PROYECTO
 const {
   generateLatLong,
   uploadFiles,
@@ -17,8 +18,14 @@ const PetsAllowed = require("../models/pets-allowed.model");
 const User = require("../models/user.model");
 const Photo = require("../models/photo.model");
 
+/*
+ * Función anónima que recibe la request y la response.
+ * Obtiene un anuncio de la BD mediante el Id del anuncio y lo devuelve en la response.
+ */
 const getListingById = async (req = request, res = response) => {
   const { id } = req.query;
+
+  //BUSCA EL ANUNCIO POR ID EN LA BD Y DEVUELVE EL RESULTDO
   const listing = await Listing.findById(id)
     .where({ state: true })
     .populate("created_by", {
@@ -32,31 +39,41 @@ const getListingById = async (req = request, res = response) => {
     .populate("pets_allowed", { __v: 0 })
     .populate("photos", { __v: 0 });
 
+  // SI NO SE HA ENCONTRADO EL ANUNCIO EN LA BD
   if (listing === null) {
     res.json({
       msg: "Sin resultados de la Base de Datos. Ningún anuncio encontrado.",
     });
   }
 
+  //RESPUETA
   return res.json({
     msg: "Anuncio encontrado con éxito en la Base de Datos.",
     listing,
   });
 };
 
+/*
+ * Función anónima que recibe la request y la response.
+ * Obtiene los anuncios de la BD, que pertenecen al usuario que se pasa por id, aplicando los filtros pasados en la petición.
+ */
 const getFilteredMyListingsPaginated = async (
   req = request,
   res = response
 ) => {
-  //FILTRADO DE DIRECCIÓN
+  //*FILTRADO DE DIRECCIÓN
   const { province = "" } = req.query;
   let addresses = [];
 
+  //COMPRUEBA SI SE HA MANDADO UNA DIRECCIÓN EN LA PETICIÓN, SI SI QUE SE HA MANDADO, LLAMA A LA FUNCIÓN DE LOS HELPERS
+  //QUE SE ENCARGA DE DEVOLVER EL FILTRO DE LA DIRECCIÓN
   if (province.toString().trim().length > 0) {
     [addresses] = await getAddressListingFiltered(province);
   }
 
-  //FILTRADO DE MASCOTAS
+  //*FILTRADO DE MASCOTAS
+  //todas las mascotas que no se hayan pasado en la petición se establecen con el valor false por defecto para poder "simular"
+  //el valor en caso de que no se haya marcado esta opción en el filtro.
   const pets = ({
     dogs = false,
     cats = false,
@@ -66,9 +83,10 @@ const getFilteredMyListingsPaginated = async (
     others = false,
   } = req.query);
 
+  //LLAMA A LA FUNCIÓN DE LOS HELPERS QUE SE ENCARGA DE DEVOLVER EL FILTRO DE LAS MASCOTAS PERMITIDAS
   let petsAllowed = await getPetsAllowedListingFiltered(pets);
 
-  //FILTRADO DE ANUNCIOS
+  //*FILTRADO DE ANUNCIOS
   const params = ({
     id = "",
     price_min = 0,
@@ -78,10 +96,14 @@ const getFilteredMyListingsPaginated = async (
     index_limit = 10,
   } = req.query);
 
+  //LLAMA A LA FUNCIÓN DE LOS HELPERS QUE SE ENCARGA DE OBTENER TODOS LOS FILTROS APLICADOS Y CALCULADOS ANTERIORMENTE
   const queryListing = getQueryFilterListing(params, addresses, petsAllowed);
 
+  //LLAMA A LA FUNCIÓN DE LOS HELPERS QUE SE ENCARGA DE OBTENER EL ORDEN ESTABLECIDO PARA MOSTRAR LAS RESPUESTAS
   const queryListingOrderBy = getQueryOrderByListing(order_by);
 
+  //PROMESA QUE HACE 2 CONSULTAS A LA BD, LA PRIMERA OBTIENE EL TOTAL DE RESULTADOS OBTENIDOS APLICANDO LOS FILTROS, LA SEGUNDA
+  //OBTIENE LOS RESULTADOS OBTENIDOS APLICANDO LOS FILTROS
   const [totalListings, listings] = await Promise.all([
     Listing.countDocuments(queryListing)
       .where({ created_by: id })
@@ -102,59 +124,60 @@ const getFilteredMyListingsPaginated = async (
       .populate("photos", { __v: 0 })
       .sort(queryListingOrderBy)
       .skip(
-        index_from < 1
-          ? 0
-          : index_from === undefined
-          ? 0
+        index_from < 1 ? 0
+          : index_from === undefined ? 0
           : Number(index_from) - 1
       )
       .limit(Number(index_limit)),
   ]);
 
+  //SI NO HAY RESULTADOS
   if (listings === null) {
     return res.json({
       msg: "Sin resultados de la Base de Datos. Ningún anuncio encontrado.",
     });
   }
 
+  //RESPUESTA
   return res.json({
     "Total anuncios encontrados aplicando los filtros:":
       listings.length > 0 ? totalListings : 0,
     "Anuncios mostrados: ": listings.length > 0 ? listings.length : 0,
     "Índice del primer anuncio mostrado: ":
-      index_from === undefined && listings.length > 0
-        ? 1
-        : index_from === undefined && listings.length == 0
-        ? 0
-        : index_from < 1 && listings.length > 0
-        ? 1
-        : index_from < 1 && listings.length == 0
-        ? 0
-        : listings.length > 0
-        ? Number(index_from)
+      index_from === undefined && listings.length > 0 ? 1
+        : index_from === undefined && listings.length == 0 ? 0
+        : index_from < 1 && listings.length > 0 ? 1
+        : index_from < 1 && listings.length == 0 ? 0
+        : listings.length > 0 ? Number(index_from)
         : 0,
     "Índice del último anuncio mostrado: ":
-      (index_from === undefined || index_from < 1) && listings.length > 0
-        ? listings.length
-        : (index_from === undefined || index_from < 1) && listings.length == 0
-        ? 0
-        : index_from > 0 && listings.length > 0
-        ? Number(index_from) + listings.length - 1
+      (index_from === undefined || index_from < 1) && listings.length > 0 ? listings.length
+        : (index_from === undefined || index_from < 1) && listings.length == 0 ? 0
+        : index_from > 0 && listings.length > 0 ? Number(index_from) + listings.length - 1
         : 0,
+
     results: listings,
   });
 };
 
+/*
+ * Función anónima que recibe la request y la response.
+ * Obtiene los anuncios de la BD, aplicando los filtros pasados en la petición.
+ */
 const getFilteredListingPaginated = async (req = request, res = response) => {
-  //FILTRADO DE DIRECCIÓN
+  //*FILTRADO DE DIRECCIÓN
   const { province = "" } = req.query;
   let addresses = [];
 
+  //COMPRUEBA SI SE HA MANDADO UNA DIRECCIÓN EN LA PETICIÓN, SI SI QUE SE HA MANDADO, LLAMA A LA FUNCIÓN DE LOS HELPERS
+  //QUE SE ENCARGA DE DEVOLVER EL FILTRO DE LA DIRECCIÓN
   if (province.toString().trim().length > 0) {
     [addresses] = await getAddressListingFiltered(province);
   }
 
-  //FILTRADO DE MASCOTAS
+  //*FILTRADO DE MASCOTAS
+  //todas las mascotas que no se hayan pasado en la petición se establecen con el valor false por defecto para poder "simular"
+  //el valor en caso de que no se haya marcado esta opción en el filtro.
   const pets = ({
     dogs = false,
     cats = false,
@@ -164,9 +187,10 @@ const getFilteredListingPaginated = async (req = request, res = response) => {
     others = false,
   } = req.query);
 
+  //LLAMA A LA FUNCIÓN DE LOS HELPERS QUE SE ENCARGA DE DEVOLVER EL FILTRO DE LAS MASCOTAS PERMITIDAS
   let petsAllowed = await getPetsAllowedListingFiltered(pets);
 
-  //FILTRADO DE ANUNCIOS
+  //*FILTRADO DE ANUNCIOS
   const params = ({
     price_min = 0,
     price_max = 9999999999,
@@ -175,10 +199,14 @@ const getFilteredListingPaginated = async (req = request, res = response) => {
     index_limit = 10,
   } = req.query);
 
+  //LLAMA A LA FUNCIÓN DE LOS HELPERS QUE SE ENCARGA DE OBTENER TODOS LOS FILTROS APLICADOS Y CALCULADOS ANTERIORMENTE
   const queryListing = getQueryFilterListing(params, addresses, petsAllowed);
 
+  //LLAMA A LA FUNCIÓN DE LOS HELPERS QUE SE ENCARGA DE OBTENER EL ORDEN ESTABLECIDO PARA MOSTRAR LAS RESPUESTAS
   const queryListingOrderBy = getQueryOrderByListing(order_by);
 
+  //PROMESA QUE HACE 2 CONSULTAS A LA BD, LA PRIMERA OBTIENE EL TOTAL DE RESULTADOS OBTENIDOS APLICANDO LOS FILTROS, LA SEGUNDA
+  //OBTIENE LOS RESULTADOS OBTENIDOS APLICANDO LOS FILTROS
   const [totalListings, listings] = await Promise.all([
     Listing.countDocuments(queryListing).where({ state: true }),
     Listing.find(queryListing)
@@ -195,61 +223,59 @@ const getFilteredListingPaginated = async (req = request, res = response) => {
       .populate("photos", { __v: 0 })
       .sort(queryListingOrderBy)
       .skip(
-        index_from < 1
-          ? 0
-          : index_from === undefined
-          ? 0
+        index_from < 1 ? 0
+          : index_from === undefined ? 0
           : Number(index_from) - 1
       )
       .limit(Number(index_limit)),
   ]);
 
+  //SI NO HAY RESULTADOS
   if (listings === null) {
     return res.json({
       msg: "Sin resultados de la Base de Datos. Ningún anuncio encontrado.",
     });
   }
 
+  //RESPUESTA
   return res.json({
     "Total anuncios encontrados aplicando los filtros:":
       listings.length > 0 ? totalListings : 0,
     "Anuncios mostrados: ": listings.length > 0 ? listings.length : 0,
     "Índice del primer anuncio mostrado: ":
-      index_from === undefined && listings.length > 0
-        ? 1
-        : index_from === undefined && listings.length == 0
-        ? 0
-        : index_from < 1 && listings.length > 0
-        ? 1
-        : index_from < 1 && listings.length == 0
-        ? 0
-        : listings.length > 0
-        ? Number(index_from)
+      index_from === undefined && listings.length > 0 ? 1
+        : index_from === undefined && listings.length == 0 ? 0
+        : index_from < 1 && listings.length > 0 ? 1
+        : index_from < 1 && listings.length == 0 ? 0
+        : listings.length > 0 ? Number(index_from)
         : 0,
     "Índice del último anuncio mostrado: ":
-      (index_from === undefined || index_from < 1) && listings.length > 0
-        ? listings.length
-        : (index_from === undefined || index_from < 1) && listings.length == 0
-        ? 0
-        : index_from > 0 && listings.length > 0
-        ? Number(index_from) + listings.length - 1
+      (index_from === undefined || index_from < 1) && listings.length > 0 ? listings.length
+        : (index_from === undefined || index_from < 1) && listings.length == 0 ? 0
+        : index_from > 0 && listings.length > 0 ? Number(index_from) + listings.length - 1
         : 0,
     results: listings,
   });
 };
 
+/*
+ * Función anónima que recibe la request y la response.
+ * Crea un anuncio perteneciente a un usuario en la BD y lo devuelve en la response.
+ */
 const createListing = async (req = request, res = response) => {
   const { created_by } = req.body;
   let photos;
   let idPhotos = [];
 
-  //ADDRESS
+  //*ADDRESS
+  //SE CREA UN OBJETO CON LA DIRECCIÓN
   const address = new Address(
     ({ province, municipality, postal_code, street, number, flour, letter } =
       req.body)
   );
 
-  // se obtienen la latitud y la longitud en base a la dirección pasada en la request utilizando el servicio de MapBox
+  //OBTENER LATITUD Y LONGITUD DE LA DIRECCIÓN
+  //se obtienen la latitud y la longitud en base a la dirección pasada en la request utilizando el servicio de MapBox
   try {
     const latLong = await generateLatLong(address);
 
@@ -264,18 +290,20 @@ const createListing = async (req = request, res = response) => {
     });
   }
 
-  //PETS_ALLOWED
+  //*PETS_ALLOWED
+  //SE CREA UN OBJETO CON LAS MASCOTAS ADMITIDAS
   const petsAllowed = new PetsAllowed(
     ({ dogs, cats, birds, rodents, exotic, others } = req.body)
   );
 
-  console.log(req.files);
-
-  //PHOTOS
+  //*PHOTOS
+  //SE COMPRUEBA SI SE HA MANDADO ALGUNA IMAGEN PARA ADJUNTARLA A LA ANUNCIO
   if (req.files !== null && req.files !== undefined) {
     try {
+      //LLAMA A LA FUNCIÓN DE LOS HELPERS ENCARGADA DE SUBIR LAS IMÁGENES A CLOUDINARY
       photos = await uploadFiles(created_by, req.files.photos);
 
+      //GUARDA EN UN ARRAY TODAS LAS FOTOS YA CREADAS QUE SE HAN RECIBIDO DESDE LA FUNCIÓN ANTERIOR
       for (const photo of photos) {
         idPhotos.push(photo._id);
       }
@@ -287,7 +315,8 @@ const createListing = async (req = request, res = response) => {
     }
   }
 
-  //LISTING
+  //*LISTING
+  //CREA UN NUEVO ANUNCIO CON TODOS LOS OBJETOS CREADOS ANTERIORMENTE
   const listing = new Listing({
     created_by: created_by,
     address: address._id,
@@ -297,7 +326,7 @@ const createListing = async (req = request, res = response) => {
     description: req.body.description,
   });
 
-  //SAVE OBJECTS IN DB
+  //GUARDA LOS OBJETOS CREADOS EN SUS RESPECTIVAS COLECCIONES DE LA BD
   await listing.save();
   await address.save();
   await petsAllowed.save();
@@ -315,15 +344,20 @@ const createListing = async (req = request, res = response) => {
   });
 };
 
+/*
+ * Función anónima que recibe la request y la response.
+ * Modifica un anuncio de la BD mediante el Id del anuncio y lo devuelve en la response.
+ */
 const updateListing = async (req = request, res = response) => {
   const { id_listing, id_user } = req.query;
 
-  //VALIDAR SI EL ANUNCIO PERTENECE AL USUARIO
+  //VALIDA SI EL ANUNCIO PERTENECE AL USUARIO
   const validateListing = await Listing.find({
     _id: id_listing,
     created_by: id_user,
   });
 
+  //SI EL ANUNCIO NO PERTENECE AL USUARIO
   if (validateListing.length === 0) {
     return res.json({
       msg: "Error al verificar la pertenencia del anuncio al usuario",
@@ -331,10 +365,11 @@ const updateListing = async (req = request, res = response) => {
     });
   }
 
-  //CREAR OBJETO ADDRESS CON LOS NUEVOS VALORES Y CAMBIAR TABLA ADDRESSES
+  //* ADDRESS
   const { province, municipality, postal_code, street, number, flour, letter } =
     req.body;
 
+  //CREA UN OBJETO ADDRESS CON LOS NUEVOS VALORES
   const address = {
     province,
     municipality,
@@ -348,7 +383,7 @@ const updateListing = async (req = request, res = response) => {
   };
 
   //SE VUELVEN A GENERAR LAS COORDENADAS PARA LA NUEVA DIRECCIÓN
-  // se obtienen la latitud y la longitud en base a la dirección pasada en la request utilizando el servicio de MapBox
+  //se obtienen la latitud y la longitud en base a la dirección pasada en la request utilizando el servicio de MapBox
   try {
     const latLong = await generateLatLong(address);
 
@@ -363,12 +398,15 @@ const updateListing = async (req = request, res = response) => {
     });
   }
 
+  //MODIFICA LA ENTRADA DE LA COLECCIÓN DE LA BD QUE TIENE LA DIRECCIÓN CON LOS NUEVOS DATOS
   await Address.findByIdAndUpdate(validateListing[0].address._id, address, {
     new: true,
   });
 
-  //CREAR OBJETO PETS_ALLOWED CON LOS NUEVOS VALORES Y CAMBIAR TABLA PETS_ALLOWED
+  //* PETS_ALLOWED
   const { dogs, cats, birds, rodents, exotic, others } = req.body;
+
+  //CREA UN OBJETO PETS_ALLOWED CON LOS NUEVOS VALORES
   const pets = {
     dogs,
     cats,
@@ -377,15 +415,18 @@ const updateListing = async (req = request, res = response) => {
     exotic,
     others,
   };
+
+  //MODIFICA LA ENTRADA DE LA COLECCIÓN DE LA BD QUE TIENE LAS MASCOTAS ADMITIDAS CON LOS NUEVOS DATOS
   await PetsAllowed.findByIdAndUpdate(
     validateListing[0].pets_allowed._id,
     pets,
     { new: true }
   );
 
-  //MODIFICAR LOS VALORES DEL LISTING CON LOS OBJETOS CREADOS ANTERIORMENTE Y LOS DATOS QUE LLEGAN EN EL BODY
+  //*LISTING
   const { price, description } = req.body;
 
+  //MODIFICA LA ENTRADA DE LA COLECCIÓN DE LA BD QUE TIENE EL ANUNCIP CON LOS NUEVOS DATOS
   const listing = await Listing.findByIdAndUpdate(
     id_listing,
     { price: price, description: description },
@@ -403,51 +444,65 @@ const updateListing = async (req = request, res = response) => {
     .populate("pets_allowed", { __v: 0 })
     .populate("photos", { __v: 0 });
 
+  //SI EL ANUNCIO NO SE HA MODIFICADO
   if (listing === null) {
     return res.json({
       msg: "Sin resultados de la Base de Datos. Ningún anuncio encontrado.",
     });
   }
 
+  //RESPUESTA
   return res.json({
     msg: "Anuncio modificado con éxito.",
     listing,
   });
 };
 
+/*
+ * Función anónima que recibe la request y la response.
+ * Elimina un anuncio de la BD mediante el Id del anuncio y lo devuelve en la response.
+ */
 const deleteListing = async (req = request, res = response) => {
   const { id_listing, id_user } = req.query;
 
-  //VALIDAR SI EL ANUNCIO PERTENECE AL USUARIO
+  //VALIDA SI EL ANUNCIO PERTENECE AL USUARIO
   const validateListing = await Listing.find({
     _id: id_listing,
     created_by: id_user,
   });
 
+  //SI EL ANUNCIO NO PERTENECE AL USUARIO
   if (validateListing.length === 0) {
     return res.json({
       msg: "Error al verificar la pertenencia del anuncio al usuario",
     });
   }
 
+  //ELIMINA EL ANUNCIO BUSCANDOLO POR EL ID DEL USUARIO
   const listing = await Listing.findByIdAndUpdate(id_listing, {
     state: false,
   }).where({
     state: true,
   });
 
+  //SI EL ANUNCIO NO SE ENCUENTRA EN LA BD
   if (listing === null) {
     return res.json({
       msg: "El anuncio que se intenta eliminar no existe. Ningún anuncio encontrado.",
     });
   }
 
+  //RESPUESTA
   return res.json({
     msg: "Anuncio eliminado con éxito.",
     listing,
   });
 };
 
+/*
+ * Función anónima que recibe la request y la response.
+ * Obtiene los anuncios favoritos de un usuario de la BD, aplicando los filtros pasados en la petición.
+ */
 const getFilteredUserFavoritesListingsPaginated = async (
   req = request,
   res = response
@@ -460,15 +515,26 @@ const getFilteredUserFavoritesListingsPaginated = async (
     { favorite_listings: 1, _id: 0 }
   );
 
-  //FILTRADO DE DIRECCIÓN
+  //SI EL USUARIO NO TIENE ANUNCIOS FAVORITOS
+  if (favoritedListings.length == 0) {
+    return res.json({
+      msg: "El usuario no tiene ningún anuncio añadido a favoritos. Ningún anuncio encontrado.",
+    });
+  }
+
+  //*FILTRADO DE DIRECCIÓN
   const { province = "" } = req.query;
   let addresses = [];
 
+  //COMPRUEBA SI SE HA MANDADO UNA DIRECCIÓN EN LA PETICIÓN, SI SI QUE SE HA MANDADO, LLAMA A LA FUNCIÓN DE LOS HELPERS
+  //QUE SE ENCARGA DE DEVOLVER EL FILTRO DE LA DIRECCIÓN
   if (province.toString().trim().length > 0) {
     [addresses] = await getAddressListingFiltered(province);
   }
 
-  //FILTRADO DE MASCOTAS
+  //*FILTRADO DE MASCOTAS
+  //todas las mascotas que no se hayan pasado en la petición se establecen con el valor false por defecto para poder "simular"
+  //el valor en caso de que no se haya marcado esta opción en el filtro.
   const pets = ({
     dogs = false,
     cats = false,
@@ -478,6 +544,7 @@ const getFilteredUserFavoritesListingsPaginated = async (
     others = false,
   } = req.query);
 
+  //LLAMA A LA FUNCIÓN DE LOS HELPERS QUE SE ENCARGA DE DEVOLVER EL FILTRO DE LAS MASCOTAS PERMITIDAS
   let petsAllowed = await getPetsAllowedListingFiltered(pets);
 
   //FILTRADO DE ANUNCIOS
@@ -490,6 +557,7 @@ const getFilteredUserFavoritesListingsPaginated = async (
     index_limit = 10,
   } = req.query);
 
+  //LLAMA A LA FUNCIÓN DE LOS HELPERS QUE SE ENCARGA DE OBTENER TODOS LOS FILTROS APLICADOS Y CALCULADOS ANTERIORMENTE
   const queryListing = getQueryFilterListing(
     params,
     addresses,
@@ -497,8 +565,11 @@ const getFilteredUserFavoritesListingsPaginated = async (
     favoritedListings.favorite_listings
   );
 
+  //LLAMA A LA FUNCIÓN DE LOS HELPERS QUE SE ENCARGA DE OBTENER EL ORDEN ESTABLECIDO PARA MOSTRAR LAS RESPUESTAS
   const queryListingOrderBy = getQueryOrderByListing(order_by);
 
+  //PROMESA QUE HACE 2 CONSULTAS A LA BD, LA PRIMERA OBTIENE EL TOTAL DE RESULTADOS OBTENIDOS APLICANDO LOS FILTROS, LA SEGUNDA
+  //OBTIENE LOS RESULTADOS OBTENIDOS APLICANDO LOS FILTROS
   const [totalListings, listings] = await Promise.all([
     Listing.countDocuments(queryListing).where({ state: true }),
     Listing.find(queryListing)
@@ -515,66 +586,64 @@ const getFilteredUserFavoritesListingsPaginated = async (
       .populate("photos", { __v: 0 })
       .sort(queryListingOrderBy)
       .skip(
-        index_from < 1
-          ? 0
-          : index_from === undefined
-          ? 0
+        index_from < 1 ? 0
+          : index_from === undefined ? 0
           : Number(index_from) - 1
       )
       .limit(Number(index_limit)),
   ]);
 
+  //SI NO SE ENCUENTRA NINGÚN ANUNCIO APLICANDO LOS FILTROS
   if (listings === null) {
     return res.json({
       msg: "Sin resultados de la Base de Datos. Ningún anuncio encontrado.",
     });
   }
 
+  //RESPUESTA
   return res.json({
     "Total anuncios encontrados aplicando los filtros:":
       listings.length > 0 ? totalListings : 0,
     "Anuncios mostrados: ": listings.length > 0 ? listings.length : 0,
     "Índice del primer anuncio mostrado: ":
-      index_from === undefined && listings.length > 0
-        ? 1
-        : index_from === undefined && listings.length == 0
-        ? 0
-        : index_from < 1 && listings.length > 0
-        ? 1
-        : index_from < 1 && listings.length == 0
-        ? 0
-        : listings.length > 0
-        ? Number(index_from)
+      index_from === undefined && listings.length > 0 ? 1
+        : index_from === undefined && listings.length == 0 ? 0
+        : index_from < 1 && listings.length > 0 ? 1
+        : index_from < 1 && listings.length == 0 ? 0
+        : listings.length > 0 ? Number(index_from)
         : 0,
     "Índice del último anuncio mostrado: ":
-      (index_from === undefined || index_from < 1) && listings.length > 0
-        ? listings.length
-        : (index_from === undefined || index_from < 1) && listings.length == 0
-        ? 0
-        : index_from > 0 && listings.length > 0
-        ? Number(index_from) + listings.length - 1
+      (index_from === undefined || index_from < 1) && listings.length > 0 ? listings.length
+        : (index_from === undefined || index_from < 1) && listings.length == 0 ? 0
+        : index_from > 0 && listings.length > 0 ? Number(index_from) + listings.length - 1
         : 0,
     results: listings,
   });
 };
 
+/*
+ * Función anónima que recibe la request y la response.
+ * Añade un anuncio a favoritos, lo guarda en la BD y lo devuelve en la response.
+ */
 const addListingToUserFavoritesListings = async (
   req = request,
   res = response
 ) => {
   const { id_listing, id_user } = req.query;
 
-  //VERIFICAR SI UN ANUNCIO QUE QUIERE AÑADIRSE A FAVORITOS YA ESTA AÑADIDO A LOS FAVORITOS DEL USUARIO
+  //VERIFICA SI UN ANUNCIO QUE QUIERE AÑADIRSE A FAVORITOS YA ESTA AÑADIDO A LOS FAVORITOS DEL USUARIO
   const validateListing = await User.find({
     $and: [{ id: id_user }, { favorite_listings: id_listing }],
   });
 
+  //SI EL ANUNCIO YA ESTA AÑADIDO A LOS FAVORITOS DEL USUARIO
   if (validateListing.length > 0) {
     return res.json({
       msg: `El anuncio con id ${id_listing} ya esta añadido a la lista de favoritos del usuario`,
     });
   }
 
+  //MODIFICA LA ENTRADA DE LA COLECCIÓN USERS DE LA BD QUE HACE REFERENCIA AL USUARIO, AÑADIENDOLE EL ANUNCIO AL CAMPO FAVORITE_LISTINGS
   const user = await User.findByIdAndUpdate(
     id_user,
     {
@@ -630,35 +699,43 @@ const addListingToUserFavoritesListings = async (
       },
     });
 
+  //SI NO SE HA MODIFICADO EL USUARIO
   if (user === null) {
     return res.json({
       msg: "Sin resultados de la Base de Datos. Ningún anuncio encontrado.",
     });
   }
 
+  //RESPUESTA
   return res.json({
     msg: "Anuncio añadido a favoritos con éxito.",
     user,
   });
 };
 
+/*
+ * Función anónima que recibe la request y la response.
+ * Elimina un anuncio de favoritos del usuario de la BD y lo devuelve en la response.
+ */
 const deleteListingToUserFavoritesListings = async (
   req = request,
   res = response
 ) => {
   const { id_listing, id_user } = req.query;
 
-  //VERIFICAR SI EL ANUNCIO QUE QUIERE ELIMINARSE DE FAVORITOS ESTA AÑADIDO A LOS FAVORITOS DEL USUARIO
+  //VERIFICA SI EL ANUNCIO QUE QUIERE ELIMINARSE DE FAVORITOS ESTA AÑADIDO A LOS FAVORITOS DEL USUARIO
   const validateListing = await User.find({
     $and: [{ id: id_user }, { favorite_listings: id_listing }],
   });
 
+  //SI NO ESTA AÑADIDO
   if (validateListing.length == 0) {
     return res.json({
       msg: `El anuncio con id ${id_listing} no esta añadido a la lista de favoritos del usuario`,
     });
   }
 
+  //MODIFICA LA ENTRADA DE LA COLECCIÓN USERS DE LA BD QUE HACE REFERENCIA AL USUARIO, ELIMINANDOLE EL ANUNCIO AL CAMPO FAVORITE_LISTINGS
   const user = await User.findByIdAndUpdate(
     id_user,
     {
@@ -714,38 +791,47 @@ const deleteListingToUserFavoritesListings = async (
       },
     });
 
+  //SI NO SE HA MODIFICADO EL USUARIO
   if (user === null) {
     return res.json({
       msg: "Sin resultados de la Base de Datos. Ningún anuncio encontrado.",
     });
   }
 
+  //RESPUESTA
   return res.json({
     msg: "Anuncio eliminado de favoritos con éxito.",
     user,
   });
 };
 
+/*
+ * Función anónima que recibe la request y la response.
+ * Añade imágenes a un anuncio ya creado.
+ */
 const addPhotosToListing = async (req = request, res = response) => {
   const { id_user, id_listing } = req.query;
 
   let photos;
 
-  //VALIDAR SI EL ANUNCIO PERTENECE AL USUARIO
+  //VALIDA SI EL ANUNCIO PERTENECE AL USUARIO
   const validateListing = await Listing.find({
     _id: id_listing,
     created_by: id_user,
   });
 
+  //SI EL ANUNCIO NO PERTENECE AL USUARIO
   if (validateListing.length === 0) {
     return res.json({
       msg: "Error al comprobar la pertenencia al usuario del anuncio",
     });
   }
 
-  //PHOTOS
+  //*PHOTOS
+  //SE COMPRUEBA SI NO SE HA MANDADO NINGUNA IMÁGEN QUE AÑADIR AL ANUNCIO
   if (req.files !== null && req.files !== undefined) {
     try {
+      //LLAMA A LA FUNCIÓN DE LOS HELPERS ENCARGADA DE SUBIR LAS IMÁGENES A CLOUDINARY
       photos = await uploadFiles(id_user, req.files.photos);
     } catch (error) {
       console.log(error);
@@ -759,14 +845,14 @@ const addPhotosToListing = async (req = request, res = response) => {
     });
   }
 
-  //AÑADIMOS LAS FOTOS A LA BD
+  //SE AÑADEN LAS FOTOS A LA BD
   if (photos !== undefined) {
     for (const photo of photos) {
       await photo.save();
     }
   }
 
-  //ACTUALIZAMOS EL LISTING
+  //SE ACTUALIZA EL LISTING AÑADIENDOLE AL CAMPO PHOTOS LAS NUEVAS IMÁGENES
   const listing = await Listing.findByIdAndUpdate(
     id_listing,
     {
@@ -793,6 +879,10 @@ const addPhotosToListing = async (req = request, res = response) => {
   });
 };
 
+/*
+ * Función anónima que recibe la request y la response.
+ * Elimina imágenes de un anuncio ya creado.
+ */
 const deletePhotosToListing = async (req = request, res = response) => {
   const { id_user, id_listing } = req.query;
   let photosRequest = req.body.photos;
@@ -800,36 +890,38 @@ const deletePhotosToListing = async (req = request, res = response) => {
   let listing;
 
   //SE COMPRUEBA SI SOLO SE MANDA UNA PHOTO PARA GUARDARLA EN UN ARRAY CON EL QUE TRABAJAR
-  //(si se recibe solo 1 foto viene como un objeto, si se recibe mas viene como array)
+  //(si se recibe solo 1 foto, viene como un objeto, si se recibe más de 1, viene como array)
   if (Array.isArray(photosRequest) == false) {
     photosRequest = [photosRequest];
   }
 
-  //VALIDAR QUE SE ADJUNTAN PHOTOS A LA PETICION
+  //VALIDA QUE SE ADJUNTEN PHOTOS A LA PETICION
   if (photosRequest[0] === null || photosRequest[0] === undefined) {
     return res.status(400).json({
       msg: "No se ha incluido ninguna imágen para añadirla al anuncio.",
     });
   }
 
-  //VALIDAR SI EL ANUNCIO PERTENECE AL USUARIO
+  //VALIDA SI EL ANUNCIO PERTENECE AL USUARIO
   const validateListing = await Listing.find({
     _id: id_listing,
     created_by: id_user,
   });
 
+  //SI EL ANUNCIO NO PERTENECE AL USUARIO
   if (validateListing.length === 0) {
     return res.json({
       msg: "Error al comprobar la pertenencia del anuncio al usuario",
     });
   }
 
-  //COMPROBAR SI LAS PHOTOS PERTENECEN AL LISTING
+  //OBTIENE TODAS LAS IMÁGENES DEL ANUNCIO
   const validatePhotosInListing = await Listing.findById(id_listing, {
     _id: 0,
     photos: 1,
   });
 
+  //COMPRUEBA SI LAS PHOTOS QUE SE QUIEREN ELIMINAR PERTENECEN AL ANUNCIO DEL QUE SE QUIEREN ELIMNAR COMPARANDOLAS ENTRE SI
   for (const photoId of photosRequest) {
     if (!validatePhotosInListing.photos.includes(photoId)) {
       return res.status(400).json({
@@ -837,14 +929,15 @@ const deletePhotosToListing = async (req = request, res = response) => {
       });
     }
 
+    //SE OBTIENE LA FOTO ENTERA DE LA BD PARA PODER TRABAJAR CON ELLA
     const photo = await Photo.findById(photoId);
     photosDeleteCloudinary.push(photo);
   }
 
-  //ELMINAR PHOTOS DE CLOUDINARY
+  //ELMINA PHOTOS DE CLOUDINARY
   try {
+    //LLAMA A LA FUNCIÓN DE LOS HELPERS ENCARGADA DE ELIMINAR LAS IMÁGENES A CLOUDINARY
     photos = deleteFiles(photosDeleteCloudinary);
-    // photos = await deleteFiles(id_user, req.files.photos);
   } catch (error) {
     console.log(error);
     return res.status(500).json({
@@ -852,7 +945,7 @@ const deletePhotosToListing = async (req = request, res = response) => {
     });
   }
 
-  //ELIMINAR FOTOS A LA BD Y ACTUALIZAR EL ANUNCIO
+  //ELIMINA LAS FOTOS DE LA BD Y ACTUALIZA EL ANUNCIO
   for (const photoId of photosRequest) {
     //elimina
     await Photo.findByIdAndRemove(photoId);
@@ -885,8 +978,7 @@ const deletePhotosToListing = async (req = request, res = response) => {
   });
 };
 
-//TODO: DOCUMENTAR TODO EL CÓDIGO, QUITAR TODOS LOS LOGS Y ARREGLAR LOS WARNINGS!
-
+//EXPORTS
 module.exports = {
   getListingById,
   getFilteredMyListingsPaginated,

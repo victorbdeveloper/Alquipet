@@ -1,3 +1,7 @@
+/*
+ * Función que recibe por parámetros los datos necesarios para generar el query de una peticion a la BD.
+ * Genera y devuelve una query válida para una petición a la BD en la que se quiere obtener los anuncios filtrados.
+ */
 //FUNCIÓN QUE GENERA LA QUERY PARA FILTRAR LOS ANUNCIOS
 function getQueryFilterListing(
   params,
@@ -5,6 +9,7 @@ function getQueryFilterListing(
   petsAllowed,
   inListingsArray
 ) {
+  //GENERA LA QUERY EN BASE LOS DATOS RECIBIDOS POR PARÁMETROS
   let queryListing = {
     _id: { $in: inListingsArray },
     $and: [
@@ -17,8 +22,7 @@ function getQueryFilterListing(
       {
         price: {
           $lte:
-            params.price_max === undefined
-              ? 9999999
+            params.price_max === undefined ? 9999999
               : parseInt(params.price_max),
         },
       },
@@ -28,6 +32,7 @@ function getQueryFilterListing(
     pets_allowed: { $in: petsAllowed },
   };
 
+  //ELIMINA DEL OBJETO QUERYLISTING LAS OPCIONES QUE VIENEN COMO UNDEFINDED O CON VALOR 0 PARA QUE NO DE ERROR CUANDO SE EJECUTE LA CONSULTA
   if (inListingsArray === undefined) delete queryListing._id;
   if (addresses.length === 0) delete queryListing.address;
   if (petsAllowed.length === 0) delete queryListing.pets_allowed;
@@ -35,13 +40,18 @@ function getQueryFilterListing(
   return queryListing;
 }
 
-//FUNCIÓN QUE GENERA LA QUERY PARA ORDENAR LOS ANUNCIOS
+/*
+ * Función que recibe un string con la forma en la que quieren ordenarse los resultados de una consulta.
+ * Genera la query para ordenar los anuncios y luego la devuelve.
+ */
 function getQueryOrderByListing(order_by) {
   let queryListingOrderBy = {
     date_publication: -1,
     price: 0,
   };
 
+  //DEPENDIENDO DE EL VALOR QUE TENGA LA PROPIEDAD PASADA POR PARÁMETROS, MODIFICA O ELIMINA DEL OBJETO QUERYLISTINGORDERBY
+  //LAS OPCIONES QUE VIENEN COMO UNDEFINDED O CON VALOR 0 PARA QUE NO DE ERROR CUANDO SE EJECUTE LA CONSULTA
   switch (order_by) {
     case "price_max":
       queryListingOrderBy.price = -1;
@@ -68,6 +78,7 @@ function getQueryOrderByListing(order_by) {
   return queryListingOrderBy;
 }
 
+//EXPORTS
 module.exports = {
   getQueryFilterListing,
   getQueryOrderByListing,

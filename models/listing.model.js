@@ -1,5 +1,7 @@
+//IMPORTS NODE
 const { Schema, model } = require("mongoose");
 
+//CREA UN MODELO PARA LOS ANUNCIOS
 const ListingSchema = Schema({
   created_by: {
     type: Schema.Types.ObjectId,
@@ -48,10 +50,12 @@ const ListingSchema = Schema({
   },
 });
 
+//SOBRESCRIBE EL MÉTODO TOJSON PARA NO TENER EN CUENTA ALGUNOS DE LOS CAMPOS DE LA RESPUESTA DE LA BD
 ListingSchema.methods.toJSON = function () {
   const { __v, _id, ...listing } = this.toObject();
   listing.uid = _id;
   return listing;
 };
 
+//EXPORTS
 module.exports = model("Listing", ListingSchema);

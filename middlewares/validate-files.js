@@ -1,7 +1,13 @@
+//IMPORTS NODE
 const { request, response } = require("express");
 
+/*
+ * Función anónima que recibe una request y una response.
+ * Valida los archivos enviados en la petición.
+ */
 const validateFiles = (req = request, res = response, next) => {
-  //SI NO SE HAN PASADO FOTOS SE SALE DIRECTAMENTE
+
+  //SI NO SE HAN PASADO FOTOS SE SALE DIRECTAMENTE PORQUE NO HAY NADA QUE VALIDAR
   if (!req.files || Object.keys(req.files).length === 0) {
     return next();
   }
@@ -48,6 +54,7 @@ const validateFiles = (req = request, res = response, next) => {
   next();
 };
 
+//EXPORTS
 module.exports = {
   validateFiles,
 };

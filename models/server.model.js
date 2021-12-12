@@ -1,17 +1,24 @@
+//IMPORTS NODE
 const express = require("express");
 const cors = require("cors");
 const fileUpload = require("express-fileupload");
 
+//IMPORTS PROYECTO
 const { dbConnection } = require("../database/config.db");
 
 /*
  * CLASE CON LA QUE SE INICIA UN SERVIDOR DE EXPRESS Y QUE CONTIENE EJEMPLOS DE DISTINTOS ENDPOINTS
  */
 class Server {
+  //CONSTRUCTOR DE LA CLASE
   constructor() {
+    //*INSTANCIA DE EXPRESS PARA GENERAR LAS RUTAS
     this.app = express();
+
+    //*PUERTO UTILIZADO PARA LAS RUTAS
     this.port = process.env.PORT;
 
+    //*PATHS DE LAS RUTAS DEFINIDAS
     this.paths = {
       auth: "/api/auth",
       listings: "/api/listings",
@@ -28,6 +35,7 @@ class Server {
     this.routes();
   }
 
+  //REALIZA LA CONEXIÓN A LA BASE DE DATOS
   async connectionDB() {
     await dbConnection();
   }
@@ -60,6 +68,7 @@ class Server {
     this.app.use(this.paths.users, require("../routes/users.routes"));
   }
 
+  //*PUERTO POR EL QUE SE ESTARÁN ESCUCHANDO LAS PETICIONES
   listen() {
     this.app.listen(this.port, () => {
       console.log("Servidor corriendo en el puerto: ", this.port);
@@ -67,4 +76,5 @@ class Server {
   }
 }
 
+//EXPORTS
 module.exports = Server;

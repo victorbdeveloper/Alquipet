@@ -1,5 +1,7 @@
+//IMPORTS NODE
 const { Schema, model } = require("mongoose");
 
+//CREA UN MODELO PARA EL USUARIO
 const UserSchema = Schema({
   user_name: {
     type: String,
@@ -44,21 +46,14 @@ const UserSchema = Schema({
       ref: "Listing",
     },
   ],
-  //TODO: ELIMINAR AL ACABAR SI NO HA DADO PROBLEMAS!!!
-  // favorite_listings: [
-  //   {
-  //     id: {
-  //       type: Schema.Types.ObjectId,
-  //       ref: "Listing",
-  //     },
-  //   },
-  // ],
 });
 
+//SOBRESCRIBE EL MÉTODO TOJSON PARA NO TENER EN CUENTA ALGUNOS DE LOS CAMPOS DE LA RESPUESTA DE LA BD
 UserSchema.methods.toJSON = function () {
   const { __v, _id, password, ...user } = this.toObject();
   user.uid = _id;
   return user;
 };
 
+//EXPORTS
 module.exports = model("User", UserSchema);

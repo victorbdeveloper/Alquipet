@@ -1,6 +1,8 @@
+//IMPORTS NODE
 const { Router } = require("express");
 const { check } = require("express-validator");
 
+//IMPORTS PROYECTO
 const {
   validateJWT,
   validateRequest,
@@ -19,9 +21,10 @@ const {
   updateUser,
 } = require("../controllers/user.controller");
 
+//ROUTER DE EXRESS CON EL QUE GENERAR LAS RUTAS DE LOS ENDPOINTS DEL SERVIDOR REST
 const router = Router();
 
-//PETICIÓN GET
+//PETICIÓN GET PARA DEVOLVER UN USUARIO POR SU ID
 router.get(
   "/get_user",
   [
@@ -33,7 +36,7 @@ router.get(
   getUser
 );
 
-//PETICIÓN POST
+//PETICIÓN POST PARA CREAR UN USUARIO
 router.post(
   "/create_user",
   [
@@ -56,7 +59,7 @@ router.post(
   createUser
 );
 
-//PETICIÓN PUT
+//PETICIÓN PUT PARA MODIFICAR UN USUARIO
 router.put(
   "/update_user",
   [
@@ -74,7 +77,7 @@ router.put(
   updateUser
 );
 
-//PETICIÓN DELETE
+//PETICIÓN DELETE PARA BORRAR A UN USUARIO
 router.delete(
   "/delete_user",
   [
@@ -86,4 +89,5 @@ router.delete(
   deleteUser
 );
 
+//EXPORTS
 module.exports = router;

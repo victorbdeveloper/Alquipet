@@ -1,6 +1,8 @@
+//IMPORTS NODE
 const { Router } = require("express");
 const { check } = require("express-validator");
 
+//IMPORTS PROYECTO
 const {
   validateJWT,
   validatePetsAllowed,
@@ -27,9 +29,10 @@ const {
   deletePhotosToListing,
 } = require("../controllers/listing.controller");
 
+//ROUTER DE EXRESS CON EL QUE GENERAR LAS RUTAS DE LOS ENDPOINTS DEL SERVIDOR REST
 const router = Router();
 
-//PETICIÓN GET
+//PETICIÓN GET PARA OBTENER UN ANUNCIO POR SU ID
 router.get(
   "/get_listing_by_id",
   [
@@ -40,7 +43,7 @@ router.get(
   getListingById
 );
 
-//PETICIÓN GET
+//PETICIÓN GET PARA OBTENER LOS ANUNCIOS CREADOS POR EL USUARIO, FILTRADOS Y PAGINADOS
 router.get(
   "/get_filtered_my_listings_paginated",
   [
@@ -100,7 +103,7 @@ router.get(
   getFilteredMyListingsPaginated
 );
 
-//PETICIÓN GET
+//PETICIÓN GET PARA OBTENER ANUNCIOS, FILTRADOS Y PAGINADOS
 router.get(
   "/get_filtered_listing_paginated",
   [
@@ -157,7 +160,7 @@ router.get(
   getFilteredListingPaginated
 );
 
-//PETICIÓN POST
+//PETICIÓN POST PARA CREAR UN ANUNCIO
 router.post(
   "/create_listing",
   [
@@ -217,7 +220,7 @@ router.post(
   createListing
 );
 
-//PETICIÓN PUT
+//PETICIÓN PUT PARA MODIFICAR UN ANUNCIO
 router.put(
   "/update_listing",
   [
@@ -281,7 +284,7 @@ router.put(
   updateListing
 );
 
-//PETICIÓN DELETE
+//PETICIÓN DELETE PARA ELIMINAR UN ANUNCIO
 router.delete(
   "/delete_listing",
   [
@@ -301,7 +304,7 @@ router.delete(
   deleteListing
 );
 
-//PETICIÓN GET
+//PETICIÓN GET PARA OBTENER LOS ANUNCIOS AÑADIDOS A FAVORITOS POR EL USUARIO, FILTRADOS Y PAGINADOS
 router.get(
   "/get_filtered_user_favorites_listings_paginated",
   [
@@ -361,7 +364,7 @@ router.get(
   getFilteredUserFavoritesListingsPaginated
 );
 
-//PETICIÓN PUT
+//PETICIÓN PUT PARA AÑADIR UN ANUNCIO A LOS FAVORITOS DEL USUARIO
 router.put(
   "/add_listing_to_user_favorites_listings",
   [
@@ -381,7 +384,7 @@ router.put(
   addListingToUserFavoritesListings
 );
 
-//PETICIÓN DELETE
+//PETICIÓN DELETE PARA BORRAR UN ANUNCIO DE LOS FAVORITOS DEL USUARIO
 router.delete(
   "/delete_listing_to_user_favorites_listings",
   [
@@ -401,7 +404,7 @@ router.delete(
   deleteListingToUserFavoritesListings
 );
 
-//PETICIÓN PUT
+//PETICIÓN PUT PARA AÑADIR IMÁGENES A UN ANUNCIO YA CREADO
 router.put(
   "/add_photos_to_listing",
   [
@@ -419,7 +422,7 @@ router.put(
   addPhotosToListing
 );
 
-//PETICIÓN DELETE
+//PETICIÓN DELETE PARA BORRAR IMÁGENES DE UN ANUNCIO YA CREADO
 router.delete(
   "/delete_photos_to_listing",
   [
@@ -437,4 +440,5 @@ router.delete(
   deletePhotosToListing
 );
 
+//EXPORTS
 module.exports = router;

@@ -1,5 +1,7 @@
+//IMPORTS NODE
 const { Schema, model } = require("mongoose");
 
+//CREA UN MODELO PARA LA DIRECCIÓN
 const AddressSchema = Schema({
   province: {
     type: String,
@@ -37,10 +39,12 @@ const AddressSchema = Schema({
   },
 });
 
+//SOBRESCRIBE EL MÉTODO TOJSON PARA NO TENER EN CUENTA ALGUNOS DE LOS CAMPOS DE LA RESPUESTA DE LA BD
 AddressSchema.methods.toJSON = function () {
   const { __v, _id, ...address } = this.toObject();
   address.uid = _id;
   return address;
 };
 
+//EXPORTS
 module.exports = model("Address", AddressSchema);
