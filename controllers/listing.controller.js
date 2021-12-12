@@ -1,4 +1,5 @@
 const { request, response } = require("express");
+const { Mongoose } = require("mongoose");
 
 const {
   generateLatLong,
@@ -14,6 +15,7 @@ const Listing = require("../models/listing.model");
 const Address = require("../models/address.model");
 const PetsAllowed = require("../models/pets-allowed.model");
 const User = require("../models/user.model");
+const Photo = require("../models/photo.model");
 
 const getListingById = async (req = request, res = response) => {
   const { id } = req.query;
@@ -728,7 +730,6 @@ const addPhotosToListing = async (req = request, res = response) => {
   const { id_user, id_listing } = req.query;
 
   let photos;
-  let idPhotos = [];
 
   //VALIDAR SI EL ANUNCIO PERTENECE AL USUARIO
   const validateListing = await Listing.find({
@@ -746,10 +747,6 @@ const addPhotosToListing = async (req = request, res = response) => {
   if (req.files !== null && req.files !== undefined) {
     try {
       photos = await uploadFiles(id_user, req.files.photos);
-
-      for (const photo of photos) {
-        idPhotos.push(photo._id);
-      }
     } catch (error) {
       console.log(error);
       return res.status(500).json({
@@ -796,8 +793,25 @@ const addPhotosToListing = async (req = request, res = response) => {
   });
 };
 
-//TODO: FALTAN DE AÑADIR DELETE_PHOTO
 const deletePhotosToListing = async (req = request, res = response) => {
+  const { id_user, id_listing } = req.query;
+  let photosRequest = req.body.photos;
+  let photosDeleteCloudinary = [];
+  let listing;
+
+  //SE COMPRUEBA SI SOLO SE MANDA UNA PHOTO PARA GUARDARLA EN UN ARRAY CON EL QUE TRABAJAR
+  //(si se recibe solo 1 foto viene como un objeto, si se recibe mas viene como array)
+  if (Array.isArray(photosRequest) == false) {
+    photosRequest = [photosRequest];
+  }
+
+  //VALIDAR QUE SE ADJUNTAN PHOTOS A LA PETICION
+  if (photosRequest[0] === null || photosRequest[0] === undefined) {
+    return res.status(400).json({
+      msg: "No se ha incluido ninguna imágen para añadirla al anuncio.",
+    });
+  }
+
   //VALIDAR SI EL ANUNCIO PERTENECE AL USUARIO
   const validateListing = await Listing.find({
     _id: id_listing,
@@ -806,10 +820,63 @@ const deletePhotosToListing = async (req = request, res = response) => {
 
   if (validateListing.length === 0) {
     return res.json({
-      msg: "Error al comprobar la pertenencia al usuario del anuncio",
+      msg: "Error al comprobar la pertenencia del anuncio al usuario",
     });
   }
+
   //COMPROBAR SI LAS PHOTOS PERTENECEN AL LISTING
+  const validatePhotosInListing = await Listing.findById(id_listing, {
+    _id: 0,
+    photos: 1,
+  });
+
+  for (const photoId of photosRequest) {
+    if (!validatePhotosInListing.photos.includes(photoId)) {
+      return res.status(400).json({
+        msg: `La imágen con id ${photoId} no pertenece al anuncio del que se quiere eliminar. Todas las fotos mandadas tienen que pertenecer al anuncio del que se quieren borrar.`,
+      });
+    }
+
+    const photo = await Photo.findById(photoId);
+    photosDeleteCloudinary.push(photo);
+  }
+
+  //ELMINAR PHOTOS DE CLOUDINARY
+  try {
+    photos = deleteFiles(photosDeleteCloudinary);
+    // photos = await deleteFiles(id_user, req.files.photos);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      msg: "Ha ocurrido un error en el servidor cuando se ha intentado subir las fotos a Cloudinary.",
+    });
+  }
+
+  //ELIMINAR FOTOS A LA BD Y ACTUALIZAR EL ANUNCIO
+  for (const photoId of photosRequest) {
+    //elimina
+    await Photo.findByIdAndRemove(photoId);
+
+    //actualiza (hay que hacer el borrado de las fotos en el listing 1 a 1 porque el pull solo acepta 1 elemento)
+    listing = await Listing.findByIdAndUpdate(
+      id_listing,
+      {
+        $pull: { photos: photoId },
+      },
+      { new: true } //con new:true se muestran los resultados de los cambios ya producidos
+    )
+      .where({ state: true })
+      .populate("created_by", {
+        password: 0,
+        google: 0,
+        favorite_listings: 0,
+        state: 0,
+        __v: 0,
+      })
+      .populate("address", { __v: 0 })
+      .populate("pets_allowed", { __v: 0 })
+      .populate("photos", { __v: 0 });
+  }
 
   //RESPUESTA
   return res.json({
