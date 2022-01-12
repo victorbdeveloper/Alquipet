@@ -46,7 +46,7 @@ class Server {
     // this.app.use(cors());
     this.app.use(
       cors({
-        origin: ["http://localhost:8081", "https://www.alquipet.com"],
+        origin: ["http://localhost:8081", "https://www.alquipet.com", "https://www.alquipet.com/api"],
         credentials: true,
       })
     );
