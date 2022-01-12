@@ -5,6 +5,7 @@ const fileUpload = require("express-fileupload");
 
 //IMPORTS PROYECTO
 const { dbConnection } = require("../database/config.db");
+const config = require('../config');
 
 /*
  * CLASE CON LA QUE SE INICIA UN SERVIDOR DE EXPRESS Y QUE CONTIENE EJEMPLOS DE DISTINTOS ENDPOINTS
@@ -14,6 +15,10 @@ class Server {
   constructor() {
     //*INSTANCIA DE EXPRESS PARA GENERAR LAS RUTAS
     this.app = express();
+
+    app.use(cors(
+      config.application.cors.server
+    ));
 
     //*PUERTO UTILIZADO PARA LAS RUTAS
     this.port = process.env.PORT;
@@ -44,18 +49,6 @@ class Server {
   middlewares() {
     //*CORS
     // this.app.use(cors());
-    this.app.use(
-      cors({
-        origin: [
-          "http://localhost:8081",
-          "https://www.alquipet.com",
-          "https://www.alquipet.com/api",
-          "https://www.alquipet.com/api/listings",
-          "https://alquipet.com/api/listings/get_filtered_listing_paginated",
-        ],
-        credentials: true,
-      })
-    );
 
     //*LECTURA Y PARSEO DEL BODY
     this.app.use(express.json());
