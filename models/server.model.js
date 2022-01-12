@@ -46,7 +46,7 @@ class Server {
     // this.app.use(cors());
     this.app.use(
       cors({
-        origin: ["http://localhost:8081", "https://www.alquipet.com", "https://www.alquipet.com/api"],
+        origin: ["http://localhost:8081", "https://www.alquipet.com", "https://www.alquipet.com/api", "https://alquipet.com/api/listings/get_filtered_listing_paginated?price_min=1&price_max=999999&province=&order_by=date_newest&index_from=1&index_limit=10"],
         credentials: true,
       })
     );
