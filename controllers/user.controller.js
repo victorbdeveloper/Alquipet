@@ -29,19 +29,21 @@ const getUser = async (req = request, res = response) => {
 const createUser = async (req = request, res = response) => {
   const { google, state, photo, favorite_listings, ...rest } = req.body;
 
-  const user = new User(rest);
+  const userModel = new User(rest);
 
   //ENCRIPTA LA PASSWORD(HACER HASH)
   const salt = bcryptjs.genSaltSync();
-  user.password = bcryptjs.hashSync(user.password, salt);
+  userModel.password = bcryptjs.hashSync(userModel.password, salt);
 
   //GUARDA EL USUARIO EN LA BASE DE DATOS
-  await user.save();
+  const createdUser = await userModel.save();
+
+  const user = await User.findById(createdUser._id);
 
   //RESPUESTA
   res.json({
     msg: "Usuario creado y guardado en la Base de Datos con éxito.",
-    rest,
+    user,
   });
 };
 

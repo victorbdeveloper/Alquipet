@@ -15,7 +15,7 @@ const generateJWT = (uid = "") => {
       payload,
       process.env.SECRETORPRIVATEKEY,
       {
-        expiresIn: "4h", //tiempo en el que caduca el token
+        expiresIn: "20 days", //tiempo en el que caduca el token
       },
       (err, token) => {
         if (err) {
