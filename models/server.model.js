@@ -5,6 +5,7 @@ const fileUpload = require("express-fileupload");
 
 //IMPORTS PROYECTO
 const { dbConnection } = require("../database/config.db");
+
 const config = require('../config');
 
 /*
@@ -15,10 +16,6 @@ class Server {
   constructor() {
     //*INSTANCIA DE EXPRESS PARA GENERAR LAS RUTAS
     this.app = express();
-
-    app.use(cors(
-      config.application.cors.server
-    ));
 
     //*PUERTO UTILIZADO PARA LAS RUTAS
     this.port = process.env.PORT;
@@ -49,6 +46,8 @@ class Server {
   middlewares() {
     //*CORS
     // this.app.use(cors());
+    this.app.use(cors(config.application.cors.server));
+    
 
     //*LECTURA Y PARSEO DEL BODY
     this.app.use(express.json());
