@@ -6,8 +6,6 @@ const fileUpload = require("express-fileupload");
 //IMPORTS PROYECTO
 const { dbConnection } = require("../database/config.db");
 
-const config = require('../config');
-
 /*
  * CLASE CON LA QUE SE INICIA UN SERVIDOR DE EXPRESS Y QUE CONTIENE EJEMPLOS DE DISTINTOS ENDPOINTS
  */
@@ -45,9 +43,7 @@ class Server {
   //* los middlewares es lo primero que se ejecuta en las peticiones (es el punto entre medias de la petición y el endPoint, mas o menos)
   middlewares() {
     //*CORS
-    // this.app.use(cors());
-    this.app.use(cors(config.application.cors.server));
-    
+    this.app.use(cors());
 
     //*LECTURA Y PARSEO DEL BODY
     this.app.use(express.json());
