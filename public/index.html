@@ -1,87 +1,120 @@
 <!DOCTYPE html>
-<html lang="es">
-
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Alquipet</title>
+    <!--
+      If you are serving your web app in a path other than the root, change the
+      href value below to reflect the base path you are serving from.
 
-  <meta name="google-signin-client_id"
-    content="3110088560-2lv4te36q981q5t0f4eqjh6hloecrsqm.apps.googleusercontent.com" />
+      The path provided below has to start and end with a slash "/" in order for
+      it to work correctly.
+
+      For more details:
+      * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+
+      This is a placeholder for base href that will be replaced by the value of
+      the `--base-href` argument provided to `flutter build`.
+    -->
+    <base href="/">
+
+    <meta charset="UTF-8">
+    <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+
+    <meta name="google-signin-client_id"
+          content="3110088560-2lv4te36q981q5t0f4eqjh6hloecrsqm.apps.googleusercontent.com"/>
+
+    <meta name="Alquipet"
+          content="Proyecto que recoge el desarrollo de la parte front (realizada en flutter web) del proyecto Alquipet">
+
+    <!-- iOS meta tags & icons -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="alquipet_front">
+    <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+    <title>alquipet_front</title>
+
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.css' rel='stylesheet'/>
+
+
+    <link rel="manifest" href="manifest.json">
+
 </head>
-
 <body>
-  <h1>HOLA ALQUIPET!</h1>
-  <hr />
-  <h2>Estamos desarrollando la web, pronto se podrá ver el resultado</h2>
-
-  <h1>Google Sign-in</h1>
-  <hr />
-
-  <div id="g_id_onload" data-client_id="3110088560-2lv4te36q981q5t0f4eqjh6hloecrsqm.apps.googleusercontent.com"
-    data-auto_prompt="false" data-callback="handleCredentialResponse"></div>
-  <div class="g_id_signin" data-type="standard" data-size="large" data-theme="outline" data-text="sign_in_with"
-    data-shape="rectangular" data-logo_alignment="left"></div>
-  <button id="google_signout">Signout</button>
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <script>
-    var url = window.location.hostname.includes("localhost") ?
-      "http://localhost:8081/api/auth/login_google" :
-      "https://www.alquipet.com/api/auth/login_google";
-
-    function handleCredentialResponse(response) {
-      //GOOGLE TOKEN : ID_TOKEN
-      const body = {
-        id_token: response.credential
-      };
-
-      // console.log(body);
-
-      fetch(url, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(body),
-        })
-        .then((resp) => resp.json())
-        .then((resp) => {
-          console.log(resp);
-          localStorage.setItem("email", resp.user.email);
-        })
-        .catch(console.warn);
+<!-- This script installs service_worker.js to provide PWA functionality to
+     application. For more information, see:
+     https://developers.google.com/web/fundamentals/primers/service-workers -->
+<script>
+    var serviceWorkerVersion = '3070055';
+    var scriptLoaded = false;
+    function loadMainDartJs() {
+      if (scriptLoaded) {
+        return;
+      }
+      scriptLoaded = true;
+      var scriptTag = document.createElement("script");
+      scriptTag.src = "main.dart.js";
+      scriptTag.type = "application/javascript";
+      document.body.append(scriptTag);
     }
 
-    const button = document.getElementById("google_signout");
-    button.onclick = () => {
-      // console.log(google.accounts.id);
-      google.accounts.id.disableAutoSelect();
-      google.accounts.id.revoke(localStorage.getItem("email"), (done) => {
-        localStorage.clear();
-        location.reload();
-      });
-    };
-  </script>
+    if ("serviceWorker" in navigator) {
+      // Service workers are supported. Use them.
+      window.addEventListener("load", function () {
+        // Wait for registration to finish before dropping the <script> tag.
+        // Otherwise, the browser will load the script multiple times,
+        // potentially different versions.
+        var serviceWorkerUrl = "flutter_service_worker.js?v=" + serviceWorkerVersion;
+        navigator.serviceWorker.register(serviceWorkerUrl)
+          .then((reg) => {
+            function waitForActivation(serviceWorker) {
+              serviceWorker.addEventListener("statechange", () => {
+                if (serviceWorker.state == "activated") {
+                  console.log("Installed new service worker.");
+                  loadMainDartJs();
+                }
+              });
+            }
+            if (!reg.active && (reg.installing || reg.waiting)) {
+              // No active web worker and we have installed or are installing
+              // one for the first time. Simply wait for it to activate.
+              waitForActivation(reg.installing || reg.waiting);
+            } else if (!reg.active.scriptURL.endsWith(serviceWorkerVersion)) {
+              // When the app updates the serviceWorkerVersion changes, so we
+              // need to ask the service worker to update.
+              console.log("New service worker available.");
+              reg.update();
+              waitForActivation(reg.installing);
+            } else {
+              // Existing service worker is still good.
+              console.log("Loading app from service worker.");
+              loadMainDartJs();
+            }
+          });
 
-  <!-- EL CÓDIGO DE ABAJO MUESTRA UN BOTON ENLAZANDO CON LA DOCUMENTACIÓN DE POSTAM!! -->
-  <!-- <div class="postman-run-button" data-postman-action="collection/fork"
-    data-postman-var-1="18019252-18ec0d24-ad8c-4204-a944-ffc9fdc9a320"
-    data-postman-collection-url="entityId=18019252-18ec0d24-ad8c-4204-a944-ffc9fdc9a320&entityType=collection&workspaceId=f4ea1331-1659-4402-a0e9-53da81bbeacd"
-    data-postman-param="env%5BALQUIPET%20DESARROLLO%20LOCAL%5D=W3sia2V5IjoiaG9zdCIsInZhbHVlIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgxIiwiZW5hYmxlZCI6dHJ1ZX0seyJrZXkiOiJhY2Nlc190b2tlbiIsInZhbHVlIjoiIiwiZW5hYmxlZCI6dHJ1ZX0seyJrZXkiOiJ1aWRfdXNlciIsInZhbHVlIjoiIiwiZW5hYmxlZCI6dHJ1ZX1d">
-  </div>
-  <script type="text/javascript">
-    (function (p, o, s, t, m, a, n) {
-      !p[s] && (p[s] = function () {
-        (p[t] || (p[t] = [])).push(arguments);
+        // If service worker doesn"t succeed in a reasonable amount of time,
+        // fallback to plaint <script> tag.
+        setTimeout(() => {
+          if (!scriptLoaded) {
+            console.warn(
+              "Failed to load app from service worker. Falling back to plain <script> tag.",
+            );
+            loadMainDartJs();
+          }
+        }, 4000);
       });
-      !o.getElementById(s + t) && o.getElementsByTagName("head")[0].appendChild((
-        (n = o.createElement("script")),
-        (n.id = s + t), (n.async = 1), (n.src = m), n
-      ));
-    }(window, document, "_pm", "PostmanRunObject", "https://run.pstmn.io/button.js"));
-  </script>
-</body> -->
+    } else {
+      // Service workers not supported. Just drop the <script> tag.
+      loadMainDartJs();
+    }
+
+
+
+
+
+</script>
+
+
+</script>
 </body>
-
 </html>
