@@ -24,12 +24,13 @@ class Server {
       listings: "/api/listings",
       users: "/api/users",
     };
+    
+    //* MIDDLEWARES
+    this.middlewares();
 
     //*CONECTAR A BASE DE DATOS
     this.connectionDB();
-
-    //* MIDDLEWARES
-    this.middlewares();
+    
 
     //* RUTAS DE MI APLICACIÓN
     this.routes();
