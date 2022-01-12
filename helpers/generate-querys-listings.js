@@ -22,7 +22,8 @@ function getQueryFilterListing(
       {
         price: {
           $lte:
-            params.price_max === undefined ? 9999999
+            params.price_max === undefined
+              ? 9999999
               : parseInt(params.price_max),
         },
       },
@@ -36,7 +37,10 @@ function getQueryFilterListing(
   if (inListingsArray === undefined) delete queryListing._id;
   if (addresses.length === 0) delete queryListing.address;
   if (petsAllowed.length === 0) delete queryListing.pets_allowed;
-
+  console.log(JSON.stringify(queryListing));
+  console.log(inListingsArray);
+  console.log(addresses);
+  console.log(petsAllowed);
   return queryListing;
 }
 
@@ -66,7 +70,7 @@ function getQueryOrderByListing(order_by) {
       delete queryListingOrderBy.price;
       break;
     case "date_oldest":
-      queryListingOrderBy.date_publication = 11;
+      queryListingOrderBy.date_publication = 1;
       delete queryListingOrderBy.price;
       break;
     default:
