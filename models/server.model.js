@@ -14,7 +14,7 @@ class Server {
   constructor() {
     //*INSTANCIA DE EXPRESS PARA GENERAR LAS RUTAS
     this.app = express();
-    this.app.use(cors());
+
     //*PUERTO UTILIZADO PARA LAS RUTAS
     this.port = process.env.PORT;
 
@@ -24,13 +24,12 @@ class Server {
       listings: "/api/listings",
       users: "/api/users",
     };
-    
+
     //* MIDDLEWARES
     this.middlewares();
 
     //*CONECTAR A BASE DE DATOS
     this.connectionDB();
-    
 
     //* RUTAS DE MI APLICACIÓN
     this.routes();
@@ -45,6 +44,12 @@ class Server {
   middlewares() {
     //*CORS
     // this.app.use(cors());
+    this.app.use(
+      cors({
+        origin: ["http://localhost:8081", "https://www.alquipet.com"],
+        credentials: true,
+      })
+    );
 
     //*LECTURA Y PARSEO DEL BODY
     this.app.use(express.json());
