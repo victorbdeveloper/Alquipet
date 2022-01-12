@@ -33,7 +33,6 @@ async function getPetsAllowedListingFiltered(pets) {
       PetsAllowed.find(queryPets, { _id: 1 }),
     ]);
   }
-  // console.log(petsAllowed);
   return petsAllowed;
 }
 

@@ -196,11 +196,10 @@ const getFilteredListingPaginated = async (req = request, res = response) => {
     exotic = false,
     others = false,
   } = req.query);
-  console.log("DDDDDDDDDDD" + JSON.stringify(req.query));
 
   //LLAMA A LA FUNCIÓN DE LOS HELPERS QUE SE ENCARGA DE DEVOLVER EL FILTRO DE LAS MASCOTAS PERMITIDAS
   let petsAllowed = await getPetsAllowedListingFiltered(pets);
-console.log(petsAllowed);
+
   //*FILTRADO DE ANUNCIOS
   const params = ({
     price_min = 0,
@@ -210,11 +209,8 @@ console.log(petsAllowed);
     index_limit = Number(10),
   } = req.query);
 
-  console.log(params);
-
   //LLAMA A LA FUNCIÓN DE LOS HELPERS QUE SE ENCARGA DE OBTENER TODOS LOS FILTROS APLICADOS Y CALCULADOS ANTERIORMENTE
   const queryListing = getQueryFilterListing(params, addresses, petsAllowed);
-  // console.log(queryListing);
 
   //LLAMA A LA FUNCIÓN DE LOS HELPERS QUE SE ENCARGA DE OBTENER EL ORDEN ESTABLECIDO PARA MOSTRAR LAS RESPUESTAS
   const queryListingOrderBy = getQueryOrderByListing(order_by);
@@ -243,10 +239,6 @@ console.log(petsAllowed);
       )
       .limit(Number(index_limit)),
   ]);
-
-  console.log("AAAAAAAAA" + index_from);
-  console.log("BBBBBBBBB" + Number(index_limit));
-  console.log("CCCCCCCCC" + listings.length);
 
   //SI NO HAY RESULTADOS
   if (listings === null) {
