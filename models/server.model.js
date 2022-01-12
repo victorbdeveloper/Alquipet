@@ -14,7 +14,7 @@ class Server {
   constructor() {
     //*INSTANCIA DE EXPRESS PARA GENERAR LAS RUTAS
     this.app = express();
-
+    this.app.use(cors());
     //*PUERTO UTILIZADO PARA LAS RUTAS
     this.port = process.env.PORT;
 
@@ -44,7 +44,7 @@ class Server {
   //* los middlewares es lo primero que se ejecuta en las peticiones (es el punto entre medias de la petición y el endPoint, mas o menos)
   middlewares() {
     //*CORS
-    this.app.use(cors());
+    // this.app.use(cors());
 
     //*LECTURA Y PARSEO DEL BODY
     this.app.use(express.json());
