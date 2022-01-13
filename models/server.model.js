@@ -43,7 +43,7 @@ class Server {
   //* los middlewares es lo primero que se ejecuta en las peticiones (es el punto entre medias de la petición y el endPoint, mas o menos)
   middlewares() {
     //*CORS
-    this.app.use(cors({credentials: true}));
+    this.app.use(cors({ origin: "*", credentials: true }));
 
     //*LECTURA Y PARSEO DEL BODY
     this.app.use(express.json());
