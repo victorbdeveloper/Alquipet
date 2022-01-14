@@ -63,9 +63,9 @@ class Server {
 
   //*SERVIR CONTENIDO PROPORCIONADO POR LA RUTA A LA QUE SE NAVEGE
   routes() {
-    this.app.use(this.paths.auth, require("../routes/auth.routes"));
+    this.app.use(this.paths.auth, require("../routes/auth.routes"), cors());
     this.app.use(this.paths.listings, require("../routes/listings.routes"), cors());
-    this.app.use(this.paths.users, require("../routes/users.routes"));
+    this.app.use(this.paths.users, require("../routes/users.routes"), cors());
   }
 
   //*PUERTO POR EL QUE SE ESTARÁN ESCUCHANDO LAS PETICIONES
