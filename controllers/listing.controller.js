@@ -175,6 +175,7 @@ const getFilteredMyListingsPaginated = async (
  * Obtiene los anuncios de la BD, aplicando los filtros pasados en la petición.
  */
 const getFilteredListingPaginated = async (req = request, res = response) => {
+
   //*FILTRADO DE DIRECCIÓN
   const { province = "" } = req.query;
   let addresses = [];
