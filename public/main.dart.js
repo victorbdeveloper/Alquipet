@@ -20212,7 +20212,7 @@ aee:function aee(a){this.a=a},
 abm:function abm(){},
 a4c:function a4c(){},
 aBl(){var s,r=$.aAI()
-r.gv0(r).up$="http://alquipet.com/api"
+r.gv0(r).up$="http://localhost:8081/api"
 r=r.gv0(r)
 s=H.hk(J.aM($.ME.bQ().a,"token"))
 r.snS(0,P.W(["Authorization","Bearer: "+(s==null?"":s)],t.N,t.z))},
